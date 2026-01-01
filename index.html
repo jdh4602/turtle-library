@@ -5,272 +5,92 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>거북이도서관 도서 검색</title>
   <style>
-    :root {
-      --bg: #050816;
-      --bg-card: #0f172a;
-      --accent: #38bdf8;
-      --accent-soft: rgba(56, 189, 248, 0.15);
-      --text-main: #e5e7eb;
-      --text-sub: #9ca3af;
-      --border-soft: rgba(148, 163, 184, 0.4);
-      --radius-lg: 16px;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
     body {
-      margin: 0;
-      min-height: 100vh;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: radial-gradient(circle at top, #0f172a 0, #020617 45%, #020617 100%);
-      color: var(--text-main);
-      padding: 14px;
+      margin: 0;
+      padding: 16px;
+      background: #f5f5f5;
     }
 
     .app {
-      max-width: 640px;
+      max-width: 600px;
       margin: 0 auto;
+      background: #ffffff;
+      padding: 16px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
     }
 
-    .header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 18px;
+    h1 {
+      font-size: 20px;
+      margin: 0 0 12px;
     }
 
-    .badge {
-      width: 32px;
-      height: 32px;
-      border-radius: 10px;
-      background: radial-gradient(circle at 30% 20%, #f9fafb, #38bdf8 45%, #0ea5e9 70%, #1e293b 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      font-weight: 800;
-      color: #020617;
-      box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.3), 0 10px 25px rgba(15, 23, 42, 0.9);
-    }
-
-    .title-wrap {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .title {
-      font-size: 18px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-    }
-
-    .subtitle {
+    .info {
       font-size: 12px;
-      color: var(--text-sub);
-    }
-
-    .panel {
-      background: linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.9));
-      border-radius: var(--radius-lg);
-      padding: 14px;
-      border: 1px solid rgba(148, 163, 184, 0.4);
-      box-shadow:
-        0 18px 40px rgba(15, 23, 42, 0.95),
-        inset 0 0 0 1px rgba(15, 23, 42, 0.9);
-    }
-
-    .search-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
+      color: #666;
       margin-bottom: 10px;
-      flex-wrap: wrap;
-    }
-
-    .hint {
-      font-size: 11px;
-      color: var(--text-sub);
-    }
-
-    .field-label {
-      font-size: 11px;
-      color: var(--text-sub);
-      text-align: right;
-      flex-shrink: 0;
-    }
-
-    .field-label span {
-      color: var(--accent);
-      font-weight: 600;
-    }
-
-    .field-toggle {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 6px;
-      margin-bottom: 10px;
-    }
-
-    .field-btn {
-      border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.5);
-      padding: 6px 4px;
-      font-size: 13px;
-      background: rgba(15, 23, 42, 0.9);
-      color: var(--text-sub);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .field-btn span {
-      font-size: 11px;
-      opacity: 0.9;
-    }
-
-    .field-btn.active {
-      background: radial-gradient(circle at 20% 0, rgba(248, 250, 252, 0.18), rgba(56, 189, 248, 0.18));
-      border-color: var(--accent);
-      color: #f9fafb;
-      box-shadow: 0 0 0 1px var(--accent-soft);
+      line-height: 1.5;
     }
 
     .search-row {
-      display: flex;
+      display: grid;
+      grid-template-columns: auto 1fr auto; /* 셀렉트 - 입력창 - 버튼 */
       gap: 8px;
-      align-items: stretch;
-      margin-bottom: 4px;
+      margin-bottom: 12px;
+      align-items: center;
     }
 
-    .search-input-wrap {
-      flex: 1;
-      position: relative;
+    select,
+    input {
+      font-size: 16px;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
     }
 
-    .search-input {
+    /* 검색 유형 셀렉트: 작게 */
+    .search-row select {
+      min-width: 90px;
+      max-width: 110px;
+      text-align-last: center;
+      background-color: #f8f8f8;
+    }
+
+    /* 검색 입력창: 가장 넓게 */
+    #searchInput {
       width: 100%;
-      border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.6);
-      background: rgba(15, 23, 42, 0.9);
-      padding: 9px 12px 9px 32px;
-      font-size: 14px;
-      color: var(--text-main);
-      outline: none;
+      padding: 8px 10px;
     }
 
-    .search-input::placeholder {
-      color: rgba(148, 163, 184, 0.8);
-      font-size: 13px;
-    }
-
-    .search-icon {
-      position: absolute;
-      left: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 13px;
-      color: rgba(148, 163, 184, 0.9);
-    }
-
-    .btn-search {
-      border-radius: 999px;
+    button {
+      padding: 8px 12px;
+      font-size: 15px;
+      border-radius: 8px;
       border: none;
-      padding: 0 14px;
-      font-size: 14px;
-      font-weight: 600;
-      background: radial-gradient(circle at 30% 0, #e5f3ff, #38bdf8 35%, #0369a1 100%);
-      color: #020617;
       cursor: pointer;
+      background: #222;
+      color: #fff;
       white-space: nowrap;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      box-shadow: 0 10px 25px rgba(8, 47, 73, 0.8);
     }
 
-    .btn-search:active {
-      transform: translateY(1px);
-      box-shadow: 0 4px 15px rgba(8, 47, 73, 0.9);
-    }
-
-    .search-extra {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 4px;
-      font-size: 11px;
-      color: var(--text-sub);
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .kbd {
-      border-radius: 4px;
-      border: 1px solid rgba(148, 163, 184, 0.7);
-      padding: 1px 4px;
-      font-size: 10px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      background: rgba(15, 23, 42, 0.9);
-      color: var(--text-main);
-    }
-
-    .pill {
-      padding: 2px 8px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid rgba(148, 163, 184, 0.7);
-      font-size: 10px;
-      color: var(--text-sub);
-    }
-
-    .results-wrap {
-      margin-top: 14px;
-    }
-
-    .result-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 12px;
-      color: var(--text-sub);
-      margin-bottom: 6px;
-      gap: 8px;
-      flex-wrap: wrap;
+    button:active {
+      opacity: 0.8;
     }
 
     .result-count {
-      font-weight: 500;
-      color: var(--text-main);
-    }
-
-    .chip {
-      border-radius: 999px;
-      padding: 2px 8px;
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid rgba(148, 163, 184, 0.6);
-      font-size: 10px;
-    }
-
-    .results {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+      font-size: 13px;
+      margin: 8px 0;
+      color: #444;
     }
 
     .card {
-      background: radial-gradient(circle at 0 0, rgba(56, 189, 248, 0.12), rgba(15, 23, 42, 0.96));
-      border-radius: 13px;
-      padding: 10px 11px;
-      border: 1px solid rgba(148, 163, 184, 0.5);
-      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.95);
+      background: #fafafa;
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      border: 1px solid #eee;
     }
 
     .title-row {
@@ -281,140 +101,59 @@
       margin-bottom: 4px;
     }
 
-    .book-title {
-      font-size: 14px;
+    .title {
       font-weight: 600;
-      letter-spacing: -0.01em;
+      font-size: 15px;
     }
 
-    .location-pill {
-      font-size: 11px;
-      padding: 3px 7px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid rgba(148, 163, 184, 0.7);
-      color: var(--accent);
+    .location {
+      font-size: 13px;
+      color: #333;
       white-space: nowrap;
     }
 
-    .meta-row {
-      font-size: 12px;
-      color: var(--text-sub);
+    .meta {
+      font-size: 13px;
+      color: #555;
       margin-bottom: 2px;
     }
 
-    .meta-label {
-      color: rgba(156, 163, 175, 1);
-      font-size: 11px;
-    }
-
     .note {
-      font-size: 11px;
-      margin-top: 4px;
-      color: rgba(209, 213, 219, 0.9);
+      font-size: 12px;
+      color: #888;
     }
 
     .no-result {
-      font-size: 12px;
-      color: var(--text-sub);
-      margin-top: 6px;
-      padding: 8px 10px;
-      border-radius: 10px;
-      border: 1px dashed rgba(148, 163, 184, 0.6);
-      background: rgba(15, 23, 42, 0.85);
-    }
-
-    @media (min-width: 720px) {
-      body {
-        padding: 24px;
-      }
-
-      .header {
-        margin-bottom: 20px;
-      }
-
-      .title {
-        font-size: 20px;
-      }
-
-      .panel {
-        padding: 16px;
-      }
+      font-size: 13px;
+      color: #999;
+      margin-top: 8px;
     }
   </style>
 </head>
 <body>
   <div class="app">
-    <header class="header">
-      <div class="badge">책</div>
-      <div class="title-wrap">
-        <div class="title">거북이도서관 도서 검색</div>
-        <div class="subtitle">바코드번호·제목·작가명으로 빠르게 위치 확인</div>
-      </div>
-    </header>
+    <h1>거북이도서관 도서 검색</h1>
+    <div class="info">
+      • 검색 기준: 제목 / 작가 / <b>바코드 번호</b><br />
+      • 예) 제목: <b>슬램덩크</b>, 작가: <b>이나우에</b>, 바코드 번호: <b>12345</b>
+    </div>
 
-    <section class="panel">
-      <div class="search-top">
-        <div class="hint">
-          바코드번호는 5자리 숫자 그대로 입력하면 된다.
-        </div>
-        <div class="field-label">
-          검색 기준: <span id="currentFieldLabel">제목</span>
-        </div>
-      </div>
+    <div class="search-row">
+      <select id="searchField">
+        <option value="title">제목</option>
+        <option value="author">작가</option>
+        <option value="id">바코드번호</option>
+      </select>
+      <input id="searchInput" type="text" placeholder="검색어를 입력하세요" />
+      <button id="searchBtn">검색</button>
+    </div>
 
-      <div class="field-toggle">
-        <button class="field-btn active" data-field-btn="title">
-          제목
-          <span>예: 슬램덩크</span>
-        </button>
-        <button class="field-btn" data-field-btn="author">
-          작가
-          <span>예: 이나우에</span>
-        </button>
-        <button class="field-btn" data-field-btn="id">
-          바코드번호
-          <span>예: 10001</span>
-        </button>
-      </div>
-
-      <div class="search-row">
-        <div class="search-input-wrap">
-          <span class="search-icon">🔍</span>
-          <input
-            id="searchInput"
-            class="search-input"
-            type="text"
-            autocomplete="off"
-            placeholder="제목으로 검색"
-          />
-        </div>
-        <button id="searchBtn" class="btn-search">
-          검색
-        </button>
-      </div>
-
-      <div class="search-extra">
-        <div>
-          Enter를 눌러도 검색된다.
-          <span class="kbd">Enter</span>
-        </div>
-        <div class="pill">문·칸 위치는 카드 오른쪽을 확인</div>
-      </div>
-
-      <div class="results-wrap">
-        <div class="result-header">
-          <div class="result-count" id="resultCount"></div>
-          <div class="chip" id="resultHint"></div>
-        </div>
-        <div id="results" class="results"></div>
-      </div>
-    </section>
+    <div id="resultCount" class="result-count"></div>
+    <div id="results"></div>
   </div>
 
   <script>
     let books = [];
-    let selectedField = 'title';
 
     async function loadBooks() {
       try {
@@ -426,33 +165,6 @@
       }
     }
 
-    function updateFieldUI(field) {
-      selectedField = field;
-
-      document.querySelectorAll('.field-btn').forEach(btn => {
-        const btnField = btn.getAttribute('data-field-btn');
-        btn.classList.toggle('active', btnField === field);
-      });
-
-      const fieldLabel = document.getElementById('currentFieldLabel');
-      const searchInput = document.getElementById('searchInput');
-      const resultHint = document.getElementById('resultHint');
-
-      if (field === 'title') {
-        fieldLabel.textContent = '제목';
-        searchInput.placeholder = '제목으로 검색 (예: 슬램덩크)';
-        resultHint.textContent = '제목에 입력한 단어가 포함된 책만 표시';
-      } else if (field === 'author') {
-        fieldLabel.textContent = '작가';
-        searchInput.placeholder = '작가명으로 검색 (예: 이나우에)';
-        resultHint.textContent = '작가명에 입력한 단어가 포함된 책만 표시';
-      } else if (field === 'id') {
-        fieldLabel.textContent = '바코드번호';
-        searchInput.placeholder = '바코드번호 5자리 (예: 10001)';
-        resultHint.textContent = '바코드번호에 입력한 숫자가 포함된 책만 표시';
-      }
-    }
-
     function renderResults(list) {
       const resultsDiv = document.getElementById('results');
       const countDiv = document.getElementById('resultCount');
@@ -461,51 +173,46 @@
 
       if (!list || list.length === 0) {
         countDiv.textContent = '';
-        resultsDiv.innerHTML =
-          '<div class="no-result">검색 결과가 없다. 검색 기준(제목/작가/바코드번호)과 철자를 다시 확인해 보자.</div>';
+        resultsDiv.innerHTML = '<div class="no-result">검색 결과가 없습니다.</div>';
         return;
       }
 
-      countDiv.textContent = `검색 결과 ${list.length}건`;
+      countDiv.textContent = `검색 결과: ${list.length}건`;
 
       list.forEach(book => {
-        const card = document.createElement('article');
+        const card = document.createElement('div');
         card.className = 'card';
 
         const titleRow = document.createElement('div');
         titleRow.className = 'title-row';
 
         const titleSpan = document.createElement('div');
-        titleSpan.className = 'book-title';
+        titleSpan.className = 'title';
         titleSpan.textContent = book.title || '(제목 없음)';
 
         const locationSpan = document.createElement('div');
-        locationSpan.className = 'location-pill';
-        locationSpan.textContent = `문 ${book.section || '-'} · 칸 ${book.shelf || '-'}`;
+        locationSpan.className = 'location';
+        locationSpan.textContent = `문 ${book.section || '-'} / 칸 ${book.shelf || '-'}`;
 
         titleRow.appendChild(titleSpan);
         titleRow.appendChild(locationSpan);
 
-        const authorRow = document.createElement('div');
-        authorRow.className = 'meta-row';
-        authorRow.innerHTML =
-          `<span class="meta-label">작가</span> ${book.author || '-'}`;
+        const meta1 = document.createElement('div');
+        meta1.className = 'meta';
+        meta1.textContent = `작가: ${book.author || '-'}`;
 
-        const codeRow = document.createElement('div');
-        codeRow.className = 'meta-row';
-        codeRow.innerHTML =
-          `<span class="meta-label">바코드번호</span> ${book.id || '-'} &nbsp;&nbsp;` +
-          `<span class="meta-label">ISBN</span> ${book.isbn || '-'}`;
+        const meta2 = document.createElement('div');
+        meta2.className = 'meta';
+        meta2.textContent =
+          `바코드 번호: ${book.id || '-'}  ·  ISBN: ${book.isbn || '-'}`;
 
         const note = document.createElement('div');
         note.className = 'note';
-        if (book.note) {
-          note.textContent = `비고: ${book.note}`;
-        }
+        note.textContent = book.note ? `비고: ${book.note}` : '';
 
         card.appendChild(titleRow);
-        card.appendChild(authorRow);
-        card.appendChild(codeRow);
+        card.appendChild(meta1);
+        card.appendChild(meta2);
         if (book.note) card.appendChild(note);
 
         resultsDiv.appendChild(card);
@@ -513,7 +220,9 @@
     }
 
     function searchBooks() {
+      const field = document.getElementById('searchField').value;
       const keyword = document.getElementById('searchInput').value.trim();
+
       if (!keyword) {
         renderResults([]);
         return;
@@ -522,13 +231,15 @@
       const lowerKeyword = keyword.toLowerCase();
 
       const filtered = books.filter(book => {
-        const value = (book[selectedField] || '').toString();
+        const value = (book[field] || '').toString();
         if (!value) return false;
 
-        if (selectedField === 'id') {
+        if (field === 'id') {
+          // 바코드 번호는 부분/완전 일치 모두 허용
           return value.includes(keyword);
         }
 
+        // 제목, 작가는 대소문자 무시 부분 검색
         return value.toLowerCase().includes(lowerKeyword);
       });
 
@@ -537,22 +248,13 @@
 
     document.getElementById('searchBtn').addEventListener('click', searchBooks);
 
-    document.getElementById('searchInput').addEventListener('keydown', e => {
+    document.getElementById('searchInput').addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         searchBooks();
       }
     });
 
-    document.querySelectorAll('[data-field-btn]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const field = btn.getAttribute('data-field-btn');
-        updateFieldUI(field);
-        document.getElementById('searchInput').focus();
-      });
-    });
-
-    // 초기 상태 설정 + 도서 데이터 로딩
-    updateFieldUI('title');
+    // 페이지 로드 시 도서 데이터 로딩
     loadBooks();
   </script>
 </body>
