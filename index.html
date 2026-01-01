@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>거북이도서관 도서 검색</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 16px;
+      background: #f5f5f5;
+    }
+
+    .app {
+      max-width: 600px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 16px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      font-size: 20px;
+      margin: 0 0 12px;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    select, input {
+      font-size: 16px;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    button {
+      padding: 8px 12px;
+      font-size: 15px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background: #222;
+      color: #fff;
+      white-space: nowrap;
+    }
+
+    button:active {
+      opacity: 0.8;
+    }
+
+    .info {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    .result-count {
+      font-size: 13px;
+      margin: 8px 0;
+      color: #444;
+    }
+
+    .card {
+      background: #fafafa;
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      border: 1px solid #eee;
+    }
+
+    .title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .title {
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    .location {
+      font-size: 13px;
+      color: #333;
+      white-space: nowrap;
+    }
+
+    .meta {
+      font-size: 13px;
+      color: #555;
+      margin-bottom: 2px;
+    }
+
+    .note {
+      font-size: 12px;
+      color: #888;
+    }
+
+    .no-result {
+      font-size: 13px;
+      color: #999;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>거북이도서관 도서 검색</h1>
+    <div class="info">
+      • 검색 기준: 제목 / 작가 / 고유ID(바코드 5자리)<br />
+      • 예) 제목: <b>슬램덩크</b>, 작가: <b>이나우에</b>, ID: <b>12345</b>
+    </div>
+
+    <div class="search-row">
+      <select id="searchField">
+        <option value="title">제목</option>
+        <option value="author">작가</option>
+        <option value="id">바코드번호</option>
+      </select>
+      <input id="searchInput" type="text" placeholder="검색어를 입력하세요" />
+      <button id="searchBtn">검색</button>
+    </div>
+
+    <div id="resultCount" class="result-count"></div>
+    <div id="results"></div>
+  </div>
+
+  <script>
+    let books = [];
+
+    async function loadBooks() {
+      try {
+        const res = await fetch('books.json');
+        books = await res.json();
+      } catch (err) {
+        console.error('도서 데이터를 불러오지 못했습니다.', err);
+        alert('도서 데이터를 불러오지 못했습니다. books.json 경로를 확인하세요.');
+      }
+    }
+
+    function renderResults(list) {
+      const resultsDiv = document.getElementById('results');
+      const countDiv = document.getElementById('resultCount');
+
+      resultsDiv.innerHTML = '';
+
+      if (!list || list.length === 0) {
+        countDiv.textContent = '';
+        resultsDiv.innerHTML = '<div class="no-result">검색 결과가 없습니다.</div>';
+        return;
+      }
+
+      countDiv.textContent = `검색 결과: ${list.length}건`;
+
+      list.forEach(book => {
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        const titleRow = document.createElement('div');
+        titleRow.className = 'title-row';
+
+        const titleSpan = document.createElement('div');
+        titleSpan.className = 'title';
+        titleSpan.textContent = book.title || '(제목 없음)';
+
+        const locationSpan = document.createElement('div');
+        locationSpan.className = 'location';
+        locationSpan.textContent = `문 ${book.section || '-'} / 칸 ${book.shelf || '-'}`;
+
+        titleRow.appendChild(titleSpan);
+        titleRow.appendChild(locationSpan);
+
+        const meta1 = document.createElement('div');
+        meta1.className = 'meta';
+        meta1.textContent = `작가: ${book.author || '-'}`;
+
+        const meta2 = document.createElement('div');
+        meta2.className = 'meta';
+        meta2.textContent = `ID: ${book.id || '-'}  ·  ISBN: ${book.isbn || '-'}`;
+
+        const note = document.createElement('div');
+        note.className = 'note';
+        note.textContent = book.note ? `비고: ${book.note}` : '';
+
+        card.appendChild(titleRow);
+        card.appendChild(meta1);
+        card.appendChild(meta2);
+        if (book.note) card.appendChild(note);
+
+        resultsDiv.appendChild(card);
+      });
+    }
+
+    function searchBooks() {
+      const field = document.getElementById('searchField').value;
+      const keyword = document.getElementById('searchInput').value.trim();
+
+      if (!keyword) {
+        renderResults([]);
+        return;
+      }
+
+      const lowerKeyword = keyword.toLowerCase();
+
+      const filtered = books.filter(book => {
+        const value = (book[field] || '').toString();
+        if (!value) return false;
+
+        if (field === 'id') {
+          // ID는 부분/완전 일치 모두 허용
+          return value.includes(keyword);
+        }
+
+        // 제목, 작가는 대소문자 무시 부분 검색
+        return value.toLowerCase().includes(lowerKeyword);
+      });
+
+      renderResults(filtered);
+    }
+
+    document.getElementById('searchBtn').addEventListener('click', searchBooks);
+
+    document.getElementById('searchInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        searchBooks();
+      }
+    });
+
+    // 페이지 로드 시 도서 데이터 로딩
+    loadBooks();
+  </script>
+</body>
+</html>
