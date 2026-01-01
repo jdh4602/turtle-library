@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>거북이도서관 · 도서 입력 관리자</title>
+
+<style>
+body { font-family: system-ui,sans-serif; background:#f5f5f5; padding:16px; }
+.app { max-width:760px; margin:0 auto; background:#fff; border-radius:12px;
+  padding:16px; box-shadow:0 2px 10px rgba(0,0,0,.08); }
+
+h2 { margin:4px 0 10px }
+.row { display:grid; grid-template-columns:130px 1fr; gap:8px; margin-bottom:8px; }
+input,select { padding:8px; border-radius:8px; border:1px solid #ccc; font-size:15px; }
+button { padding:8px 12px; border-radius:8px; border:none; background:#222; color:#fff; cursor:pointer; }
+button:active{opacity:.85}
+.preview{background:#fafafa;border:1px solid #eee;border-radius:10px;padding:10px;margin:10px 0;font-size:14px}
+.item{background:#f8f8f8;border:1px solid #ddd;border-radius:10px;padding:10px;margin-bottom:6px;font-size:14px}
+.note{font-size:12px;color:#777}
+.badge{display:inline-block;font-size:11px;padding:2px 6px;border-radius:999px;background:#eee;margin-left:4px;}
+</style>
+</head>
+
+<body>
+<div class="app">
+  <h2>📚 도서 데이터 입력</h2>
+
+  <div class="note">
+    1️⃣ 먼저 문 / 칸 위치를 입력합니다<br>
+    2️⃣ ISBN 바코드를 스캔하면 제목·작가가 자동 조회됩니다<br>
+    3️⃣ 내부 바코드번호를 다시 스캔하면 목록에 추가됩니다
+  </div>
+
+  <hr>
+
+  <div class="row">
+    <label>문 번호</label>
+    <input id="sectionInput" placeholder="예: A1 / 3 / 12" />
+  </div>
+
+  <div class="row">
+    <label>칸 번호</label>
+    <input id="shelfInput" placeholder="예: 1 / 2 / 5" />
+  </div>
+
+  <hr>
+
+  <div class="row">
+    <label>ISBN</label>
+    <input id="isbnInput" placeholder="ISBN 바코드를 스캔하세요" />
+  </div>
+
+  <button id="lookupBtn">ISBN 도서정보 조회</button>
+
+  <div id="lookupPreview" class="preview" style="display:none;"></div>
+
+  <div class="row">
+    <label>바코드 번호</label>
+    <input id="idInput" placeholder="내부 바코드번호 스캔" />
+  </div>
+
+  <button id="addBtn" disabled>목록에 추가</button>
+
+  <h3>✓ 입력된 목록</h3>
+  <div id="list"></div>
+
+  <button id="downloadBtn">books.csv 다운로드</button>
+</div>
+
+<script>
+let entries = [];
+let current = {};
+
+// 테스트용: 국립중앙도서관만 강제로 쓰고 싶으면 true 로 바꾸기
+// true  → Google 무시, 국립중앙도서관만 사용
+// false → Google → 실패 시 국립중앙도서관 폴백
+const TEST_NLK_ONLY = false;
+
+// 국립중앙도서관 ISBN 서지정보 Open API 인증키
+// (https://www.nl.go.kr > 도서관 서비스 > Open API 에서 발급)
+const NLK_CERT_KEY = "YOUR_NLK_CERT_KEY";
+
+// DOM 캐싱
+const sectionInput  = document.getElementById("sectionInput");
+const shelfInput    = document.getElementById("shelfInput");
+const isbnInput     = document.getElementById("isbnInput");
+const idInput       = document.getElementById("idInput");
+const lookupBtn     = document.getElementById("lookupBtn");
+const addBtn        = document.getElementById("addBtn");
+const downloadBtn   = document.getElementById("downloadBtn");
+const lookupPreview = document.getElementById("lookupPreview");
+const list          = document.getElementById("list");
+
+function csvEscape(val) {
+  const v = (val ?? "").toString().replace(/"/g, '""');
+  return `"${v}"`;
+}
+
+// ---------------------------
+// 1) Google Books 조회
+// ---------------------------
+async function fetchFromGoogle(isbn) {
+  const url = `https://www.googleapis.com/books/v1/volumes?q=isbn:${encodeURIComponent(isbn)}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Google HTTP " + res.status);
+
+  const data = await res.json();
+  if (!data.items || !data.items.length) return null;
+
+  const info = data.items[0].volumeInfo || {};
+  return {
+    title: info.title || "",
+    author: (info.authors || []).join(", ")
+  };
+}
+
+// ---------------------------
+// 2) 국립중앙도서관 ISBN 서지정보 API 조회
+//    https://www.nl.go.kr/seoji/SearchApi.do
+//    필수: cert_key, result_style, page_no, page_size
+//    + isbn
+// ---------------------------
+async function fetchFromNLK(isbn) {
+  if (!NLK_CERT_KEY) {
+    throw new Error("NLK 인증키(NLK_CERT_KEY)가 설정되지 않았습니다.");
+  }
+
+  const params = new URLSearchParams({
+    cert_key: NLK_CERT_KEY,
+    result_style: "json",
+    page_no: "1",
+    page_size: "10",
+    isbn: isbn
+  });
+
+  const url = `https://www.nl.go.kr/seoji/SearchApi.do?${params.toString()}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("NLK HTTP " + res.status);
+
+  const data = await res.json();
+
+  // 예상 구조: { PAGE_NO, TOTAL_COUNT, docs: [ { TITLE, AUTHOR, EA_ISBN, ... }, ... ] }
+  let docs = data.docs;
+
+  if (!docs) {
+    // 방어 코드: 혹시 다른 이름으로 들어오는 경우 대비
+    if (Array.isArray(data.DOCS)) {
+      docs = data.DOCS;
+    } else if (data.DOCS && Array.isArray(data.DOCS.docs)) {
+      docs = data.DOCS.docs;
+    }
+  }
+
+  if (!docs || !docs.length) return null;
+
+  const first = docs[0] || {};
+  const title = first.TITLE || first.title || "";
+  const author = first.AUTHOR || first.author || "";
+
+  if (!title && !author) return null;
+
+  return { title, author };
+}
+
+// ---------------------------
+// 3) ISBN 조회 (Google → 국립중앙도서관 폴백)
+// ---------------------------
+async function lookupISBN() {
+  const isbn    = isbnInput.value.trim();
+  const section = sectionInput.value.trim();
+  const shelf   = shelfInput.value.trim();
+
+  if (!section || !shelf) {
+    alert("먼저 문 번호와 칸 번호를 입력하세요.");
+    return;
+  }
+  if (!isbn) {
+    alert("ISBN 바코드를 먼저 스캔하세요.");
+    return;
+  }
+
+  let bookInfo = null;
+  let source = "";
+
+  // 테스트 모드가 아니면 Google 먼저 시도
+  if (!TEST_NLK_ONLY) {
+    try {
+      bookInfo = await fetchFromGoogle(isbn);
+      if (bookInfo && bookInfo.title) {
+        source = "google";
+      }
+    } catch (e) {
+      console.warn("Google Books 조회 오류:", e);
+    }
+  }
+
+  // Google 결과 없으면 국립중앙도서관 시도
+  if (!bookInfo || !bookInfo.title) {
+    try {
+      bookInfo = await fetchFromNLK(isbn);
+      if (bookInfo && bookInfo.title) {
+        source = "nlk";
+      }
+    } catch (e) {
+      console.warn("국립중앙도서관 ISBN 서지정보 조회 오류:", e);
+    }
+  }
+
+  if (!bookInfo || !bookInfo.title) {
+    alert("해당 ISBN의 책 정보를 Google / 국립중앙도서관 어디에서도 찾을 수 없습니다.");
+    return;
+  }
+
+  current = {
+    isbn,
+    title: bookInfo.title,
+    author: bookInfo.author,
+    id: "",
+    section,
+    shelf,
+    note: ""
+  };
+
+  lookupPreview.style.display = "block";
+  lookupPreview.innerHTML = `
+    <b>${current.title}</b>
+    <span class="badge">${
+      source === "nlk" ? "국립중앙도서관" : "Google Books"
+    }</span><br>
+    ${current.author || "(작가 정보 없음)"}<br>
+    문 ${current.section} / 칸 ${current.shelf}<br>
+    ISBN: ${current.isbn}<br>
+    <span class="note">
+      TEST_NLK_ONLY: ${TEST_NLK_ONLY ? "국립중앙도서관만 사용" : "Google → 국립중앙도서관 폴백"}
+    </span>
+  `;
+
+  addBtn.disabled = false;
+  idInput.focus();
+}
+
+// ---------------------------
+// 4) 목록에 추가
+// ---------------------------
+function addEntry() {
+  const id = idInput.value.trim();
+  if (!id) {
+    alert("내부 바코드번호를 입력하세요.");
+    return;
+  }
+
+  const entry = { ...current, id };
+  entries.push(entry);
+
+  const item = document.createElement("div");
+  item.className = "item";
+  item.innerHTML = `
+    <b>${entry.title}</b><br>
+    ${entry.author}<br>
+    바코드번호: ${entry.id} · 문 ${entry.section} / 칸 ${entry.shelf}
+  `;
+  list.appendChild(item);
+
+  // 다음 책 준비 (위치는 유지)
+  isbnInput.value = "";
+  idInput.value = "";
+  lookupPreview.style.display = "none";
+  addBtn.disabled = true;
+  isbnInput.focus();
+}
+
+// ---------------------------
+// 5) CSV 다운로드 (Excel용, ISBN 깨짐 방지)
+// ---------------------------
+function downloadCSV() {
+  if (!entries.length) {
+    alert("저장할 데이터가 없습니다.");
+    return;
+  }
+
+  const header = ["id","title","author","isbn","section","shelf","note"];
+  const rows = [header.join(",")];
+
+  entries.forEach(e => {
+    // 엑셀이 9.78E+12로 바꾸지 않게 ="" 형식으로 넣기
+    const isbnField = e.isbn ? `="${e.isbn}"` : "";
+
+    const row = [
+      csvEscape(e.id),
+      csvEscape(e.title),
+      csvEscape(e.author),
+      isbnField,                 // ISBN 칸
+      csvEscape(e.section),
+      csvEscape(e.shelf),
+      csvEscape(e.note || "")
+    ].join(",");
+
+    rows.push(row);
+  });
+
+  const csv = "\uFEFF" + rows.join("\r\n");
+  const blob = new Blob([csv], { type:"text/csv;charset=utf-8;" });
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "books.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// 이벤트 바인딩
+lookupBtn.onclick   = lookupISBN;
+addBtn.onclick      = addEntry;
+downloadBtn.onclick = downloadCSV;
+
+isbnInput.addEventListener("keydown", e => {
+  if (e.key === "Enter") lookupISBN();
+});
+idInput.addEventListener("keydown", e => {
+  if (e.key === "Enter") addEntry();
+});
+</script>
+</body>
+</html>
