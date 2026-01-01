@@ -134,8 +134,8 @@
   <div class="app">
     <h1>거북이도서관 도서 검색</h1>
     <div class="info">
-      • 검색 기준: 제목 / 작가 / <b>바코드 번호</b><br />
-      • 예) 제목: <b>슬램덩크</b>, 작가: <b>이나우에</b>, 바코드 번호: <b>12345</b>
+      • 검색 기준: 제목 / 작가 / <b>바코드번호</b><br />
+      • 예) 제목: <b>슬램덩크</b>, 작가: <b>이나우에</b>, 바코드번호: <b>12345</b>
     </div>
 
     <div class="search-row">
@@ -204,7 +204,7 @@
         const meta2 = document.createElement('div');
         meta2.className = 'meta';
         meta2.textContent =
-          `바코드 번호: ${book.id || '-'}  ·  ISBN: ${book.isbn || '-'}`;
+          `바코드번호: ${book.id || '-'}  ·  ISBN: ${book.isbn || '-'}`;
 
         const note = document.createElement('div');
         note.className = 'note';
@@ -235,7 +235,7 @@
         if (!value) return false;
 
         if (field === 'id') {
-          // 바코드 번호는 부분/완전 일치 모두 허용
+          // 바코드번호는 부분/완전 일치 모두 허용
           return value.includes(keyword);
         }
 
@@ -259,3 +259,4 @@
   </script>
 </body>
 </html>
+
