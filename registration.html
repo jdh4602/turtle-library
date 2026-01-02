@@ -14,27 +14,35 @@
     }
 
     .app {
-      max-width: 720px;
+      max-width: 760px;
       margin: 0 auto;
       background: #fff;
       border-radius: 12px;
       padding: 20px;
       box-shadow: 0 2px 10px rgba(0,0,0,.08);
+      position: relative;
     }
 
     h1 {
-      margin: 0 0 4px;
-      font-size: 20px;
+      margin: 0 0 16px;
+      font-size: 22px;
     }
 
     h2 {
-      margin: 16px 0 8px;
-      font-size: 16px;
+      margin: 0 0 8px;
+      font-size: 17px;
     }
 
     .section {
-      padding: 12px 0;
-      border-top: 1px solid #eee;
+      margin-bottom: 20px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: #fafafa;
+      border: 1px solid #e0e0e0;
+    }
+
+    .section + .section {
+      margin-top: 16px;
     }
 
     .label {
@@ -44,11 +52,23 @@
       display: block;
     }
 
+    .row {
+      margin-bottom: 10px;
+    }
+
+    .row-inline {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
     input {
       width: 100%;
       box-sizing: border-box;
-      padding: 10px 12px;
-      font-size: 15px;
+      padding: 8px 10px;
+      font-size: 14px;
       border-radius: 8px;
       border: 1px solid #ccc;
       outline: none;
@@ -59,61 +79,37 @@
       box-shadow: 0 0 0 2px rgba(25,118,210,.15);
     }
 
-    /* 🔹 input + 버튼 정렬 개선 */
-    .input-row {
-      display: flex;
-      align-items: stretch;   /* 높이 동일하게 */
-      gap: 8px;
-      margin-top: 8px;
-    }
-
-    .input-row input {
-      flex: 1 1 auto;
-    }
-
-    .input-row button {
-      flex: 0 0 auto;
-      min-width: 96px;
-      padding: 0 12px;
-      font-size: 13px;
-
-      /* 버튼 높이를 input과 동일하게 */
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      line-height: 1;
-    }
-
     button {
-      border: 1px solid #1976d2;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 14px;
+      cursor: pointer;
       background: #1976d2;
       color: #fff;
-      cursor: pointer;
+      white-space: nowrap;
     }
 
-    button:hover {
-      background: #145ca3;
-      border-color: #145ca3;
-    }
-
-    .info-box {
-      margin-top: 8px;
-      font-size: 13px;
+    button.secondary {
+      background: #e0e0e0;
       color: #333;
     }
 
-    .info-box span.label {
-      color: #888;
-      margin-right: 4px;
-      display: inline;
+    .current-location {
+      margin-top: 4px;
+      font-size: 14px;
+      color: #333;
     }
 
-    .row-2col {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
+    .status {
       margin-top: 8px;
+      font-size: 13px;
+      min-height: 18px;
+      color: #2f7d32;
+    }
+
+    .status.error {
+      color: #c62828;
     }
 
     .log-box {
@@ -131,35 +127,127 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
         "Courier New", monospace;
     }
+
+    /* 로그인 UI */
+    .login-wrapper {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: #f5f5f5;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 360px;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.08);
+      padding: 16px 16px 14px;
+    }
+
+    .login-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .login-input {
+      width: 100%;
+      padding: 8px 9px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      margin-bottom: 6px;
+      box-sizing: border-box;
+    }
+
+    .login-input:focus {
+      outline: none;
+      border-color: #2f8e89;
+    }
+
+    .login-button {
+      width: 100%;
+      margin-top: 4px;
+      padding: 9px 10px;
+      border-radius: 8px;
+      border: 0;
+      background: #2f8e89;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .login-error {
+      margin-top: 6px;
+      font-size: 12px;
+      min-height: 16px;
+      color: #b33950;
+    }
+
+    .logout-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: #b33950;
+      color: #fff;
+      border: 0;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 12px;
+      cursor: pointer;
+    }
   </style>
 </head>
 
 <body>
-  <div class="app">
+  <!-- 로그인 화면 -->
+  <div id="loginWrapper" class="login-wrapper">
+    <div class="login-card">
+      <div class="login-title">관리자 로그인</div>
+      <input
+        id="loginId"
+        class="login-input"
+        placeholder="아이디 (예: jdh4602)"
+        autocomplete="off"
+      />
+      <input
+        id="loginPw"
+        class="login-input"
+        type="password"
+        placeholder="비밀번호"
+      />
+      <button id="loginBtn" class="login-button" type="button">
+        로그인
+      </button>
+      <div id="loginError" class="login-error"></div>
+    </div>
+  </div>
+
+  <!-- 관리자 화면 -->
+  <div id="adminApp" class="app" style="display:none;">
+    <button id="logoutBtn" class="logout-btn" type="button">로그아웃</button>
+
     <h1>도서 등록 관리자 페이지</h1>
 
-    <!-- 책장 바코드 번호 -->
     <div class="section">
       <h2>책장 바코드 번호</h2>
-
-      <input
-        id="shelfInput"
-        placeholder="문-칸 바코드 (예: 00101)"
-        autocomplete="off"
-        autofocus
-      />
-
-      <div class="info-box">
-        <span class="label">현재 위치:</span>
-        <span id="currentLocation">(미설정)</span>
+      <div class="row">
+        <label class="label" for="shelfInput">문-칸 바코드 (예: 00101)</label>
+        <input id="shelfInput" placeholder="예: 00101" autocomplete="off" />
+      </div>
+      <div id="currentLocation" class="current-location">
+        현재 위치: (미설정)
       </div>
     </div>
 
-    <!-- ISBN 바코드 번호 -->
     <div class="section">
       <h2>ISBN 바코드 번호</h2>
-
-      <div class="input-row">
+      <div class="row-inline">
         <input
           id="isbnInput"
           placeholder="ISBN 바코드 스캔"
@@ -167,45 +255,138 @@
         />
         <button id="fetchBookBtn" type="button">도서 정보 조회</button>
       </div>
-
-      <div class="row-2col">
-        <div>
-          <span class="label">제목</span>
-          <input id="titleInput" placeholder="도서 제목" />
-        </div>
-        <div>
-          <span class="label">저자</span>
-          <input id="authorInput" placeholder="저자명" />
-        </div>
+      <div class="row">
+        <label class="label" for="titleInput">제목</label>
+        <input id="titleInput" placeholder="도서 제목" />
+      </div>
+      <div class="row">
+        <label class="label" for="authorInput">저자</label>
+        <input id="authorInput" placeholder="저자명" />
       </div>
     </div>
 
-    <!-- 도서 바코드 번호 -->
     <div class="section">
       <h2>도서 바코드 번호</h2>
-
-      <div class="input-row">
+      <div class="row">
+        <label class="label" for="bookBarcodeInput">도서 바코드</label>
         <input
           id="bookBarcodeInput"
-          placeholder="책 고유 바코드 (숫자 3~20자리)"
+          placeholder="도서 바코드 스캔"
           autocomplete="off"
         />
+      </div>
+      <div class="row-inline">
         <button id="saveBtn" type="button">도서 정보 저장</button>
       </div>
     </div>
 
-    <!-- 로그 -->
     <div class="section">
       <h2>등록 로그</h2>
       <pre id="log" class="log-box"></pre>
     </div>
   </div>
 
-  <!-- Firebase compat SDK -->
-  <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore-compat.js"></script>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
-  <!-- 관리자 로직 -->
+  <!-- 관리자 기능 (아래 registration.js 내용) -->
   <script src="./registration.js"></script>
+
+  <!-- 로그인 / 로그아웃 (Firebase Auth 사용) -->
+  <script>
+    (function () {
+      "use strict";
+
+      const loginWrapper = document.getElementById("loginWrapper");
+      const adminApp = document.getElementById("adminApp");
+      const loginId = document.getElementById("loginId");
+      const loginPw = document.getElementById("loginPw");
+      const loginBtn = document.getElementById("loginBtn");
+      const loginError = document.getElementById("loginError");
+      const logoutBtn = document.getElementById("logoutBtn");
+
+      function showLogin() {
+        if (loginWrapper) loginWrapper.style.display = "flex";
+        if (adminApp) adminApp.style.display = "none";
+      }
+
+      function showAdmin() {
+        if (loginWrapper) loginWrapper.style.display = "none";
+        if (adminApp) adminApp.style.display = "block";
+      }
+
+      function doLogin() {
+        if (!window.firebase || !firebase.auth) {
+          loginError.textContent = "Firebase Auth 로드에 실패했습니다.";
+          return;
+        }
+
+        const rawId = (loginId.value || "").trim();
+        const pw = loginPw.value || "";
+
+        if (!rawId || !pw) {
+          loginError.textContent = "아이디와 비밀번호를 입력하세요.";
+          return;
+        }
+
+        const email = rawId.includes("@") ? rawId : rawId + "@gmail.com";
+
+        firebase
+          .auth()
+          .signInWithEmailAndPassword(email, pw)
+          .then((userCred) => {
+            loginError.textContent = "";
+            // onAuthStateChanged 에서 화면 전환 처리
+          })
+          .catch((err) => {
+            console.error(err);
+            loginError.textContent =
+              "로그인에 실패했습니다. 아이디/비밀번호를 확인해 주세요.";
+          });
+      }
+
+      if (loginBtn) {
+        loginBtn.addEventListener("click", doLogin);
+      }
+      if (loginPw) {
+        loginPw.addEventListener("keydown", function (e) {
+          if (e.key === "Enter") doLogin();
+        });
+      }
+      if (loginId) {
+        loginId.addEventListener("keydown", function (e) {
+          if (e.key === "Enter") {
+            if (loginPw) loginPw.focus();
+          }
+        });
+      }
+
+      if (logoutBtn) {
+        logoutBtn.addEventListener("click", function () {
+          if (!window.firebase || !firebase.auth) return;
+          firebase
+            .auth()
+            .signOut()
+            .catch((err) => console.error(err));
+        });
+      }
+
+      if (window.firebase && firebase.auth) {
+        firebase.auth().onAuthStateChanged(function (user) {
+          // 규칙에서 이메일을 jdh4602@gmail.com 으로 제한했으므로 여기서도 동일하게 체크
+          if (user && user.email === "jdh4602@gmail.com") {
+            showAdmin();
+          } else {
+            showLogin();
+          }
+        });
+      } else {
+        // Auth 로드 실패 시에는 로그인 화면만 노출
+        showLogin();
+      }
+    })();
+  </script>
 </body>
 </html>
