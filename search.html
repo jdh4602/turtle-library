@@ -29,6 +29,7 @@
 
     .info { font-size:13px; color:#666; margin-bottom:12px; }
 
+    /* 검색 영역 */
     .search-row {
       display:grid;
       grid-template-columns:
@@ -53,50 +54,57 @@
 
     input:focus { border-color:#1976d2; }
 
-    #searchBtn {
-      padding:0 10px;
-      height:42px;
-      border-radius:8px;
-      border:none;
-      background:#1976d2;
-      color:#fff;
-      font-weight:600;
-      cursor:pointer;
-      white-space:nowrap;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      transition:background .2s;
-    }
 
-    #searchBtn:hover { background:#145ca3; }
-
-    .view-btn {
+    /* ---------------------------
+         🔹 버튼 공통 스타일(기준)
+       --------------------------- */
+    .btn-primary {
       height:42px;
       padding:0 10px;
+
+      /* 🔸 폰트 스타일 = 검색 버튼 기준 */
       font-size:15px;
       font-weight:600;
-      border-radius:8px;
-      border:none;
+
+      /* 🔸 색상 = 위치보기 버튼 색상 */
       background:#1976d2;
       color:#fff;
+
+      border:none;
+      border-radius:8px;
+
       cursor:pointer;
-      width:100%;
       white-space:nowrap;
+
       display:flex;
       align-items:center;
       justify-content:center;
-      box-sizing:border-box;
+
       transition:background .2s;
+      box-sizing:border-box;
+      font-family:inherit;
     }
 
-    .view-btn:hover { background:#145ca3; }
+    .btn-primary:hover { background:#145ca3; }
 
+    /* 🔹 검색 버튼 */
+    #searchBtn { width:100%; }
+
+    /* 🔹 위치보기 버튼 — 가로폭만 컴팩트하게 축소 */
+    .view-btn {
+      @apply btn-primary;
+      width:auto;          /* 카드 오른쪽에서 꽉 차지 않게 */
+      padding:0 12px;      /* 살짝 컴팩트 */
+      align-self:flex-end; /* 오른쪽 끝 정렬 */
+    }
+
+    /* 극소형 화면 보호용 */
     @media (max-width:360px){
       .search-row { grid-template-columns:1fr; }
       #searchBtn { width:100%; }
     }
 
+    /* 카드 UI */
     .card{
       background:#fafafa;
       border-radius:10px;
@@ -132,6 +140,7 @@
 
     .view-disabled{ font-size:12px; color:#aaa; margin-top:auto; }
 
+    /* 위치 이미지 팝업 */
     .overlay{
       position:fixed; inset:0;
       background:rgba(0,0,0,.6);
@@ -171,8 +180,10 @@
         <option value="author">작가</option>
         <option value="id">바코드번호</option>
       </select>
+
       <input id="searchInput" placeholder="검색어를 입력하세요" />
-      <button id="searchBtn">검색</button>
+
+      <button id="searchBtn" class="btn-primary">검색</button>
     </div>
 
     <div id="resultCount"></div>
@@ -269,7 +280,7 @@
 
         if(img){
           const btn=document.createElement("button");
-          btn.className="view-btn";
+          btn.className="view-btn btn-primary";
           btn.textContent="위치보기";
           btn.onclick=()=>{
             overlayImg.src=img;
@@ -309,12 +320,8 @@
             ? v.includes(q)
             : v.toLowerCase().includes(ql);
         })
-
-        // 🔹 제목 오름차순 정렬 (ko locale)
         .sort((a,b)=>
-          (a.title||"").localeCompare(b.title||"", "ko", {
-            sensitivity:"base"
-          })
+          (a.title||"").localeCompare(b.title||"", "ko", { sensitivity:"base" })
         );
 
       render(list);
