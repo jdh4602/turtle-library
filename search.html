@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>거북이도서관 도서 검색</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 16px;
+      background: #f5f5f5;
+    }
+
+    .app {
+      max-width: 600px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 16px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      font-size: 20px;
+      margin: 0 0 12px;
+    }
+
+    .info {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+
+    .search-row {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 8px;
+      margin-bottom: 12px;
+      align-items: center;
+    }
+
+    select,
+    input {
+      font-size: 16px;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+
+    .search-row select {
+      min-width: 90px;
+      max-width: 110px;
+      /* 드롭다운 텍스트 좌측 정렬 */
+      text-align-last: left;
+      text-align: left;
+      background-color: #f8f8f8;
+    }
+
+    #searchInput {
+      width: 100%;
+      padding: 8px 10px;
+    }
+
+    button {
+      padding: 8px 12px;
+      font-size: 15px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background: #222;
+      color: #fff;
+      white-space: nowrap;
+    }
+
+    button:active {
+      opacity: 0.8;
+    }
+
+    .result-count {
+      font-size: 13px;
+      margin: 8px 0;
+      color: #444;
+    }
+
+    .card {
+      background: #fafafa;
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      border: 1px solid #eee;
+    }
+
+    .title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .title {
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    .location {
+      font-size: 13px;
+      color: #333;
+      white-space: nowrap;
+    }
+
+    .meta {
+      font-size: 13px;
+      color: #555;
+      margin-bottom: 2px;
+    }
+
+    .note {
+      font-size: 12px;
+      color: #888;
+    }
+
+    .no-result {
+      font-size: 13px;
+      color: #999;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>거북이도서관 도서 검색</h1>
+    <div class="info">
+      • 칸 번호는 위쪽칸이 1번입니다.
+    </div>
+
+    <div class="search-row">
+      <select id="searchField">
+        <option value="title">제목</option>
+        <option value="author">작가</option>
+        <option value="id">바코드번호</option>
+      </select>
+      <input id="searchInput" type="text" placeholder="검색어를 입력하세요" />
+      <button id="searchBtn">검색</button>
+    </div>
+
+    <div id="resultCount" class="result-count"></div>
+    <div id="results"></div>
+  </div>
+
+  <!-- Firebase + Firestore: ESM CDN 사용 -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js';
+    import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js';
+
+    // TODO: 여기에 네 Firebase 프로젝트 설정을 넣어줘
+    // Firebase 콘솔 > 프로젝트 설정 > "내 앱" > Web 앱에서 config 복사
+    const firebaseConfig = {
+      apiKey: "AIzaSyA_BkguverEd0Cz8XA24ktcAodk9TH-GeI",
+  authDomain: "turtle-library-book-db.firebaseapp.com",
+  projectId: "turtle-library-book-db",
+  storageBucket: "turtle-library-book-db.firebasestorage.app",
+  messagingSenderId: "611950738800",
+  appId: "1:611950738800:web:7d9474d358c0a33bd6e3b5"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let books = [];
+
+    async function loadBooksFromFirebase() {
+      try {
+        const snapshot = await getDocs(collection(db, 'books'));
+        books = snapshot.docs.map(doc => {
+          const data = doc.data() || {};
+
+          // 문서 ID 또는 필드 book_barcode를 검색용 id로 사용
+          const barcode = data.book_barcode || doc.id;
+
+          return {
+            // 기존 UI에서 쓰던 키 이름들과 맞춰줌
+            title: data.title || '',
+            author: data.author || '',
+            id: barcode || '',
+            // 위치 정보 (door_no, slot_no)
+            door_no: data.door_no || '',
+            slot_no: data.slot_no || '',
+            // 참고로 필요한 값들 유지
+            isbn: data.isbn || '',
+            location_code: data.location_code || '',
+            note: data.note || ''
+          };
+        });
+      } catch (err) {
+        console.error('파이어베이스에서 도서 데이터를 불러오지 못했습니다.', err);
+        alert('도서 데이터를 불러오지 못했습니다. Firebase 설정과 Firestore 권한을 확인하세요.');
+      }
+    }
+
+    function formatLocationNumber(value) {
+      if (!value) return '-';
+      const n = parseInt(value, 10);
+      if (Number.isNaN(n)) return value;
+      return String(n);
+    }
+
+    function renderResults(list) {
+      const resultsDiv = document.getElementById('results');
+      const countDiv = document.getElementById('resultCount');
+
+      resultsDiv.innerHTML = '';
+
+      if (!list || list.length === 0) {
+        countDiv.textContent = '';
+        resultsDiv.innerHTML = '<div class="no-result">검색 결과가 없습니다.</div>';
+        return;
+      }
+
+      countDiv.textContent = `검색 결과: ${list.length}건`;
+
+      list.forEach(book => {
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        const titleRow = document.createElement('div');
+        titleRow.className = 'title-row';
+
+        const titleSpan = document.createElement('div');
+        titleSpan.className = 'title';
+        titleSpan.textContent = book.title || '(제목 없음)';
+
+        const locationSpan = document.createElement('div');
+        locationSpan.className = 'location';
+
+        const doorLabel = formatLocationNumber(book.door_no);
+        const slotLabel = formatLocationNumber(book.slot_no);
+        locationSpan.textContent = `문 ${doorLabel} / 칸 ${slotLabel}`;
+
+        titleRow.appendChild(titleSpan);
+        titleRow.appendChild(locationSpan);
+
+        const meta1 = document.createElement('div');
+        meta1.className = 'meta';
+        meta1.textContent = `작가: ${book.author || '-'}`;
+
+        const meta2 = document.createElement('div');
+        meta2.className = 'meta';
+        meta2.textContent = `바코드 번호: ${book.id || '-'}`;
+
+        const note = document.createElement('div');
+        note.className = 'note';
+        note.textContent = book.note ? `비고: ${book.note}` : '';
+
+        card.appendChild(titleRow);
+        card.appendChild(meta1);
+        card.appendChild(meta2);
+        if (book.note) card.appendChild(note);
+
+        resultsDiv.appendChild(card);
+      });
+    }
+
+    function searchBooks() {
+      const field = document.getElementById('searchField').value;
+      const keywordRaw = document.getElementById('searchInput').value.trim();
+
+      if (!keywordRaw) {
+        renderResults([]);
+        return;
+      }
+
+      const keyword = keywordRaw;
+      const lowerKeyword = keyword.toLowerCase();
+
+      const filtered = books.filter(book => {
+        let value = '';
+
+        if (field === 'title') value = book.title || '';
+        else if (field === 'author') value = book.author || '';
+        else if (field === 'id') value = book.id || '';
+
+        if (!value) return false;
+
+        if (field === 'id') {
+          // 바코드 검색: 숫자 문자열 그대로 포함 여부
+          return value.includes(keyword);
+        }
+
+        // 제목/작가: 소문자 변환 후 부분 일치
+        return value.toLowerCase().includes(lowerKeyword);
+      });
+
+      renderResults(filtered);
+    }
+
+    // 이벤트 바인딩
+    document.getElementById('searchBtn').addEventListener('click', searchBooks);
+
+    document.getElementById('searchInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        searchBooks();
+      }
+    });
+
+    // 페이지 로드 시 Firestore에서 전체 도서 목록 로딩
+    loadBooksFromFirebase();
+  </script>
+</body>
+</html>
