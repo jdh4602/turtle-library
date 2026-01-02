@@ -29,13 +29,13 @@
 
     .info { font-size:13px; color:#666; margin-bottom:12px; }
 
-    /* 🔹 검색 영역 — 버튼 칸을 더 줄이고 입력창을 최대 확장 */
+    /* 검색 영역 — 버튼 칸 더 줄이고 입력창 확장 */
     .search-row {
       display:grid;
       grid-template-columns:
-        minmax(0, 105px)   /* 드롭다운 */
-        minmax(0, 1fr)     /* 검색 입력창 (가장 넓게) */
-        minmax(0, 62px);   /* 🔻 버튼 영역 더 축소 */
+        minmax(0,105px)
+        minmax(0,1fr)
+        minmax(0,62px);
       gap:8px;
       margin-bottom:16px;
       align-items:center;
@@ -57,9 +57,9 @@
 
     input:focus { border-color:#1976d2; }
 
-    /* 🔹 버튼 폰트 크기 그대로 유지 — 대신 가로 패딩만 살짝 축소 */
+    /* 🔹 검색 버튼 스타일 (기준 버튼) */
     #searchBtn {
-      padding:0 10px;      /* ← 기존보다 살짝만 줄임 */
+      padding:0 10px;
       height:42px;
       border-radius:8px;
       border:none;
@@ -76,29 +76,94 @@
 
     #searchBtn:hover { background:#145ca3; }
 
-    /* 매우 좁은 기기 보호용 */
+    /* 🔹 위치보기 버튼 = 검색버튼과 동일 스타일로 통일 */
+    .view-btn {
+      height:42px;
+      padding:0 10px;
+      font-size:15px;
+      font-weight:600;
+      border-radius:8px;
+      border:none;
+      background:#1976d2;
+      color:#fff;
+      cursor:pointer;
+      width:100%;
+      white-space:nowrap;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-sizing:border-box;
+      transition:background .2s;
+    }
+
+    .view-btn:hover { background:#145ca3; }
+
+    /* 극소형 화면 보호용 */
     @media (max-width:360px){
       .search-row { grid-template-columns:1fr; }
       #searchBtn { width:100%; }
     }
 
-    /* 나머지 카드/팝업 코드는 동일 */
-    .card{background:#fafafa;border-radius:10px;padding:14px 12px;border:1px solid #eee;margin-bottom:10px;display:flex;justify-content:space-between;align-items:stretch;gap:12px;}
-    .card-left{flex:1;display:flex;flex-direction:column;}
-    .card-right{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;flex-shrink:0;min-width:90px;gap:6px;}
-    .title{font-size:15px;font-weight:700;color:#222;line-height:1.3;word-break:break-all;}
-    .author-row{margin-top:auto;padding-top:10px;font-size:13px;color:#666;line-height:1.3;}
-    .barcode-row{font-size:13px;color:#666;line-height:1.3;margin-top:2px;}
-    .location{font-size:14px;white-space:nowrap;text-align:right;color:#444;}
-    .loc-number{color:#1976d2;font-weight:700;font-size:15px;}
-    .view-btn{height:40px;padding:0 12px;font-size:15px;font-weight:600;border-radius:8px;border:none;background:#1976d2;color:#fff;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;}
-    .view-btn:hover{background:#115293;}
-    .view-disabled{font-size:12px;color:#aaa;margin-top:auto;}
-    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(2px);}
-    .overlay.show{display:flex;}
-    .overlay-content{background:#fff;border-radius:12px;padding:8px;max-width:90vw;max-height:85vh;box-shadow:0 4px 12px rgba(0,0,0,.2);}
-    .overlay-img{display:block;max-width:100%;max-height:80vh;border-radius:8px;}
-    #resultCount{font-size:13px;font-weight:600;color:#444;margin:4px 0 12px;}
+    /* 카드 레이아웃 */
+    .card{
+      background:#fafafa;
+      border-radius:10px;
+      padding:14px 12px;
+      border:1px solid #eee;
+      margin-bottom:10px;
+      display:flex;
+      justify-content:space-between;
+      align-items:stretch;
+      gap:12px;
+    }
+
+    .card-left{ flex:1; display:flex; flex-direction:column; }
+
+    .card-right{
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      align-items:flex-end;
+      flex-shrink:0;
+      min-width:90px;
+      gap:6px;
+    }
+
+    .title{ font-size:15px; font-weight:700; color:#222; line-height:1.3; word-break:break-all; }
+
+    .author-row{ margin-top:auto; padding-top:10px; font-size:13px; color:#666; line-height:1.3; }
+
+    .barcode-row{ font-size:13px; color:#666; line-height:1.3; margin-top:2px; }
+
+    .location{ font-size:14px; white-space:nowrap; text-align:right; color:#444; }
+    .loc-number{ color:#1976d2; font-weight:700; font-size:15px; }
+
+    .view-disabled{ font-size:12px; color:#aaa; margin-top:auto; }
+
+    .overlay{
+      position:fixed; inset:0;
+      background:rgba(0,0,0,.6);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:1000;
+      backdrop-filter:blur(2px);
+    }
+
+    .overlay.show{ display:flex; }
+
+    .overlay-content{
+      background:#fff;
+      border-radius:12px;
+      padding:8px;
+      max-width:90vw;
+      max-height:85vh;
+      box-shadow:0 4px 12px rgba(0,0,0,.2);
+    }
+
+    .overlay-img{ display:block; max-width:100%; max-height:80vh; border-radius:8px; }
+
+    #resultCount{ font-size:13px; font-weight:600; color:#444; margin:4px 0 12px; }
   </style>
 </head>
 
@@ -141,7 +206,8 @@
 
     const db = getFirestore(app);
 
-    let books=[]; let doors={};
+    let books=[]; 
+    let doors={};
 
     const resultsDiv=document.getElementById("results");
     const countDiv=document.getElementById("resultCount");
@@ -150,18 +216,23 @@
 
     overlay.addEventListener("click",()=>overlay.classList.remove("show"));
 
-    function fmt(n){ if(!n) return "-"; const v=parseInt(n,10); return Number.isNaN(v)?n:String(v); }
+    function fmt(n){
+      if(!n) return "-";
+      const v=parseInt(n,10);
+      return Number.isNaN(v)? n : String(v);
+    }
 
     function doorImg(door){
       if(!door) return null;
       const s=String(door);
       if(doors[s]) return doors[s];
       const n=parseInt(s,10);
-      return doors[String(n)]||null;
+      return doors[String(n)] || null;
     }
 
     function render(list){
       resultsDiv.innerHTML="";
+
       if(!list.length){
         countDiv.textContent="";
         resultsDiv.innerHTML="<div style='text-align:center;color:#888;padding:20px;'>검색 결과가 없습니다.</div>";
@@ -179,15 +250,15 @@
 
         const title=document.createElement("div");
         title.className="title";
-        title.textContent=b.title||"(제목 없음)";
+        title.textContent=b.title || "(제목 없음)";
 
         const author=document.createElement("div");
         author.className="author-row";
-        author.textContent=`작가: ${b.author||"-"}`;
+        author.textContent=`작가: ${b.author || "-"}`;
 
         const barcode=document.createElement("div");
         barcode.className="barcode-row";
-        barcode.textContent=`바코드: ${b.id||"-"}`;
+        barcode.textContent=`바코드: ${b.id || "-"}`;
 
         left.append(title,author,barcode);
 
@@ -203,11 +274,15 @@
         right.append(loc);
 
         const img=doorImg(b.door_no);
+
         if(img){
           const btn=document.createElement("button");
           btn.className="view-btn";
           btn.textContent="위치보기";
-          btn.onclick=()=>{ overlayImg.src=img; overlay.classList.add("show"); };
+          btn.onclick=()=>{
+            overlayImg.src=img;
+            overlay.classList.add("show");
+          };
           right.append(btn);
         } else {
           const no=document.createElement("div");
@@ -224,24 +299,31 @@
     function search(){
       const field=document.getElementById("searchField").value;
       const q=document.getElementById("searchInput").value.trim();
+
       if(!q){ render([]); return; }
 
       const ql=q.toLowerCase();
 
       const list=books.filter((b)=>{
-        let v=
+        let v =
           field==="title" ? b.title :
           field==="author" ? b.author :
           field==="id" ? b.id : "";
+
         if(!v) return false;
-        return field==="id" ? v.includes(q) : v.toLowerCase().includes(ql);
+
+        return field==="id"
+          ? v.includes(q)
+          : v.toLowerCase().includes(ql);
       });
 
       render(list);
     }
 
     document.getElementById("searchBtn").onclick=search;
-    document.getElementById("searchInput").onkeydown=(e)=>{ if(e.key==="Enter") search(); };
+    document.getElementById("searchInput").onkeydown=(e)=>{
+      if(e.key==="Enter") search();
+    };
 
     async function load(){
       try{
@@ -250,14 +332,14 @@
           getDocs(collection(db,"doors")),
         ]);
 
-        books=bookSnap.docs.map((d)=>{
+        books = bookSnap.docs.map((d)=>{
           const x=d.data()||{};
           return{
-            title:x.title||"",
-            author:x.author||"",
-            id:x.book_barcode||d.id,
-            door_no:x.door_no||"",
-            slot_no:x.slot_no||"",
+            title:x.title || "",
+            author:x.author || "",
+            id:x.book_barcode || d.id,
+            door_no:x.door_no || "",
+            slot_no:x.slot_no || "",
           };
         });
 
@@ -270,6 +352,7 @@
             if(!Number.isNaN(n)) doors[String(n)]=data.image_url;
           }
         });
+
       } catch(err){
         console.error("데이터 로딩 실패:",err);
         resultsDiv.textContent="데이터를 불러오는 중 오류가 발생했습니다.";
