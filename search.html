@@ -29,7 +29,6 @@
 
     .info { font-size:13px; color:#666; margin-bottom:12px; }
 
-    /* 검색 영역 — 버튼 칸 더 줄이고 입력창 확장 */
     .search-row {
       display:grid;
       grid-template-columns:
@@ -41,10 +40,7 @@
       align-items:center;
     }
 
-    .search-row > * {
-      min-width:0;
-      box-sizing:border-box;
-    }
+    .search-row > * { min-width:0; box-sizing:border-box; }
 
     select,input {
       font-size:15px;
@@ -57,7 +53,6 @@
 
     input:focus { border-color:#1976d2; }
 
-    /* 🔹 검색 버튼 스타일 (기준 버튼) */
     #searchBtn {
       padding:0 10px;
       height:42px;
@@ -76,7 +71,6 @@
 
     #searchBtn:hover { background:#145ca3; }
 
-    /* 🔹 위치보기 버튼 = 검색버튼과 동일 스타일로 통일 */
     .view-btn {
       height:42px;
       padding:0 10px;
@@ -98,13 +92,11 @@
 
     .view-btn:hover { background:#145ca3; }
 
-    /* 극소형 화면 보호용 */
     @media (max-width:360px){
       .search-row { grid-template-columns:1fr; }
       #searchBtn { width:100%; }
     }
 
-    /* 카드 레이아웃 */
     .card{
       background:#fafafa;
       border-radius:10px;
@@ -206,7 +198,7 @@
 
     const db = getFirestore(app);
 
-    let books=[]; 
+    let books=[];
     let doors={};
 
     const resultsDiv=document.getElementById("results");
@@ -304,18 +296,26 @@
 
       const ql=q.toLowerCase();
 
-      const list=books.filter((b)=>{
-        let v =
-          field==="title" ? b.title :
-          field==="author" ? b.author :
-          field==="id" ? b.id : "";
+      const list = books
+        .filter((b)=>{
+          let v =
+            field==="title"  ? b.title  :
+            field==="author" ? b.author :
+            field==="id"     ? b.id     : "";
 
-        if(!v) return false;
+          if(!v) return false;
 
-        return field==="id"
-          ? v.includes(q)
-          : v.toLowerCase().includes(ql);
-      });
+          return field==="id"
+            ? v.includes(q)
+            : v.toLowerCase().includes(ql);
+        })
+
+        // 🔹 제목 오름차순 정렬 (ko locale)
+        .sort((a,b)=>
+          (a.title||"").localeCompare(b.title||"", "ko", {
+            sensitivity:"base"
+          })
+        );
 
       render(list);
     }
