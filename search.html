@@ -4,150 +4,241 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>거북이도서관 도서 검색</title>
+
   <style>
+    /* 1. 기본 폰트 설정 */
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       margin: 0;
       padding: 16px;
       background: #f5f5f5;
     }
 
+    /* 2. 폰트 상속 (모든 버튼 글씨체 통일) */
+    button, input, select {
+      font-family: inherit;
+    }
+
     .app {
       max-width: 600px;
       margin: 0 auto;
-      background: #ffffff;
-      padding: 16px;
+      background: #fff;
       border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      padding: 16px;
+      box-shadow: 0 2px 6px rgba(0,0,0,.08);
     }
 
     h1 {
-      font-size: 20px;
       margin: 0 0 12px;
+      font-size: 20px;
+      font-weight: 700;
+      color: #333;
     }
 
     .info {
-      font-size: 12px;
+      font-size: 13px;
       color: #666;
-      margin-bottom: 10px;
-      line-height: 1.5;
+      margin-bottom: 12px;
     }
 
+    /* --- 검색 영역 --- */
     .search-row {
       display: grid;
       grid-template-columns: auto 1fr auto;
       gap: 8px;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
       align-items: center;
     }
 
-    select,
-    input {
-      font-size: 16px;
-      padding: 8px;
+    select, input {
+      font-size: 15px;
+      padding: 10px;
       border-radius: 8px;
-      border: 1px solid #ccc;
+      border: 1px solid #ddd;
+      outline: none;
+      background: #fff;
+      height: 42px; 
       box-sizing: border-box;
     }
 
-    .search-row select {
-      min-width: 90px;
-      max-width: 110px;
-      /* 드롭다운 텍스트 좌측 정렬 */
-      text-align-last: left;
-      text-align: left;
-      background-color: #f8f8f8;
+    input:focus {
+      border-color: #1976d2;
     }
 
-    #searchInput {
-      width: 100%;
-      padding: 8px 10px;
-    }
-
-    /* 🔹 registration과 동일한 계열의 파란색 버튼 스타일 */
-    button {
-      padding: 8px 12px;
+    /* 검색 버튼 스타일 */
+    button#searchBtn {
+      padding: 0 16px;
+      height: 42px;    
       font-size: 15px;
       border-radius: 8px;
-      border: 1px solid #1976d2;
-      cursor: pointer;
+      border: none;
       background: #1976d2;
       color: #fff;
+      font-weight: 600;
+      cursor: pointer;
       white-space: nowrap;
+      transition: background 0.2s;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    button:hover {
+    button#searchBtn:hover {
       background: #145ca3;
-      border-color: #145ca3;
     }
 
-    button:active {
-      opacity: 0.9;
-    }
-
-    .result-count {
-      font-size: 13px;
-      margin: 8px 0;
-      color: #444;
-    }
-
+    /* --- 카드 스타일 (수정됨) --- */
     .card {
       background: #fafafa;
       border-radius: 10px;
-      padding: 10px 12px;
-      margin-bottom: 8px;
+      padding: 14px 12px;
       border: 1px solid #eee;
-    }
-
-    .title-row {
+      margin-bottom: 10px;
+      
+      /* 좌우 배치 설정 */
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 4px;
+      
+      /* 중요: 양쪽 높이를 똑같이 늘려서 바닥 정렬 기준을 맞춤 */
+      align-items: stretch; 
+      gap: 12px;
+    }
+
+    /* 왼쪽 구역 (제목 -공백- 작가/바코드) */
+    .card-left {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      /* 기본적으로 위에서부터 정렬 */
+    }
+
+    /* 오른쪽 구역 (위치 -공백- 버튼) */
+    .card-right {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between; /* 내용을 위/아래 끝으로 벌림 */
+      align-items: flex-end;          /* 우측 정렬 */
+      flex-shrink: 0;
+      min-width: 90px;
+      gap: 6px;
     }
 
     .title {
-      font-weight: 600;
       font-size: 15px;
+      font-weight: 700;
+      color: #222;
+      line-height: 1.3;
+      word-break: break-all;
+      /* 제목은 위에 그대로 둡니다 */
+    }
+
+    /* 핵심: 작가 텍스트를 아래로 밀어버리는 속성 */
+    .author-row {
+      margin-top: auto; /* 위쪽 여백을 자동으로 채워서 바닥으로 밀림 */
+      padding-top: 10px; /* 제목과 너무 붙지 않도록 최소 여백 확보 */
+      
+      font-size: 13px;
+      color: #666;
+      line-height: 1.3;
+    }
+
+    .barcode-row {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.3;
+      margin-top: 2px; /* 작가와 바코드 사이 좁은 간격 */
     }
 
     .location {
-      font-size: 15px; /* 책 제목과 동일한 폰트 크기 */
-      color: #333;
+      font-size: 14px;
       white-space: nowrap;
+      text-align: right;
+      color: #444;
+      /* 위치 텍스트는 위에 그대로 둡니다 */
     }
 
-    /* 🔹 위치 숫자 강조: 파란색 + 볼드 */
     .loc-number {
       color: #1976d2;
       font-weight: 700;
+      font-size: 15px;
     }
 
-    .meta {
-      font-size: 13px;
-      color: #555;
-      margin-bottom: 2px;
+    /* 위치보기 버튼 스타일 */
+    .view-btn {
+      height: 40px;      
+      padding: 0 12px;   
+      font-size: 15px;   
+      font-weight: 600;  
+      
+      border-radius: 8px;
+      border: none;
+      background: #1976d2;
+      color: #fff;
+      cursor: pointer;
+      width: 100%;
+      text-align: center;
+      display: flex;       
+      align-items: center;
+      justify-content: center;
     }
 
-    .note {
+    .view-btn:hover {
+      background: #115293;
+    }
+
+    .view-disabled {
       font-size: 12px;
-      color: #888;
+      color: #aaa;
+      margin-top: auto; /* 버튼 없을 때도 텍스트를 아래로 */
     }
 
-    .no-result {
+    /* 팝업 스타일 */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(2px);
+    }
+
+    .overlay.show {
+      display: flex;
+    }
+
+    .overlay-content {
+      background: #fff;
+      border-radius: 12px;
+      padding: 8px;
+      max-width: 90vw;
+      max-height: 85vh;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .overlay-img {
+      display: block;
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 8px;
+    }
+
+    #resultCount {
       font-size: 13px;
-      color: #999;
-      margin-top: 8px;
+      font-weight: 600;
+      color: #444;
+      margin: 4px 0 12px;
     }
   </style>
 </head>
+
 <body>
   <div class="app">
     <h1>거북이도서관 도서 검색</h1>
-    <div class="info">
-      • 칸 번호는 위쪽칸이 1번입니다.
-    </div>
+
+    <div class="info">• 칸 번호는 위쪽칸이 1번입니다.</div>
 
     <div class="search-row">
       <select id="searchField">
@@ -155,175 +246,193 @@
         <option value="author">작가</option>
         <option value="id">바코드번호</option>
       </select>
-      <input id="searchInput" type="text" placeholder="검색어를 입력하세요" />
+      <input id="searchInput" placeholder="검색어를 입력하세요" />
       <button id="searchBtn">검색</button>
     </div>
 
-    <div id="resultCount" class="result-count"></div>
+    <div id="resultCount"></div>
     <div id="results"></div>
   </div>
 
-  <!-- Firebase + Firestore: ESM CDN 사용 -->
-  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js';
-    import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js';
+  <div id="overlay" class="overlay">
+    <div class="overlay-content">
+      <img id="overlayImg" class="overlay-img" alt="책장 위치 이미지" />
+    </div>
+  </div>
 
-    // Firebase 설정
-    const firebaseConfig = {
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+
+    const app = initializeApp({
       apiKey: "AIzaSyA_BkguverEd0Cz8XA24ktcAodk9TH-GeI",
       authDomain: "turtle-library-book-db.firebaseapp.com",
       projectId: "turtle-library-book-db",
-      storageBucket: "turtle-library-book-db.firebasestorage.app",
-      messagingSenderId: "611950738800",
-      appId: "1:611950738800:web:7d9474d358c0a33bd6e3b5"
-    };
+      storageBucket: "turtle-library-book-db.firebasestorage.app"
+    });
 
-    const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
     let books = [];
+    let doors = {};
 
-    async function loadBooksFromFirebase() {
-      try {
-        const snapshot = await getDocs(collection(db, 'books'));
-        books = snapshot.docs.map(doc => {
-          const data = doc.data() || {};
+    const resultsDiv = document.getElementById("results");
+    const countDiv   = document.getElementById("resultCount");
+    const overlay    = document.getElementById("overlay");
+    const overlayImg = document.getElementById("overlayImg");
 
-          // 문서 ID 또는 필드 book_barcode를 검색용 id로 사용
-          const barcode = data.book_barcode || doc.id;
+    overlay.addEventListener("click", () => overlay.classList.remove("show"));
 
-          return {
-            // 기존 UI에서 쓰던 키 이름들과 맞춰줌
-            title: data.title || '',
-            author: data.author || '',
-            id: barcode || '',
-            // 위치 정보 (door_no, slot_no)
-            door_no: data.door_no || '',
-            slot_no: data.slot_no || '',
-            // 참고로 필요한 값들 유지
-            isbn: data.isbn || '',
-            location_code: data.location_code || '',
-            note: data.note || ''
-          };
-        });
-      } catch (err) {
-        console.error('파이어베이스에서 도서 데이터를 불러오지 못했습니다.', err);
-        alert('도서 데이터를 불러오지 못했습니다. Firebase 설정과 Firestore 권한을 확인하세요.');
-      }
+    function fmt(n) {
+      if (!n) return "-";
+      const v = parseInt(n, 10);
+      return Number.isNaN(v) ? n : String(v);
     }
 
-    function formatLocationNumber(value) {
-      if (!value) return '-';
-      const n = parseInt(value, 10);
-      if (Number.isNaN(n)) return value;
-      return String(n);
+    function doorImg(door) {
+      if (!door) return null;
+      const s = String(door);
+      if (doors[s]) return doors[s];
+      const n = parseInt(s, 10);
+      return doors[String(n)] || null;
     }
 
-    function renderResults(list) {
-      const resultsDiv = document.getElementById('results');
-      const countDiv = document.getElementById('resultCount');
+    function render(list) {
+      resultsDiv.innerHTML = "";
 
-      resultsDiv.innerHTML = '';
-
-      if (!list || list.length === 0) {
-        countDiv.textContent = '';
-        resultsDiv.innerHTML = '<div class="no-result">검색 결과가 없습니다.</div>';
+      if (!list.length) {
+        countDiv.textContent = "";
+        resultsDiv.innerHTML = "<div style='text-align:center; color:#888; padding:20px;'>검색 결과가 없습니다.</div>";
         return;
       }
 
       countDiv.textContent = `검색 결과: ${list.length}건`;
 
-      list.forEach(book => {
-        const card = document.createElement('div');
-        card.className = 'card';
+      list.forEach((b) => {
+        const card = document.createElement("div");
+        card.className = "card";
 
-        const titleRow = document.createElement('div');
-        titleRow.className = 'title-row';
+        // --- 왼쪽 구역: 제목(위) --- [공백] --- 작가/바코드(아래)
+        const leftCol = document.createElement("div");
+        leftCol.className = "card-left";
 
-        const titleSpan = document.createElement('div');
-        titleSpan.className = 'title';
-        titleSpan.textContent = book.title || '(제목 없음)';
+        const title = document.createElement("div");
+        title.className = "title";
+        title.textContent = b.title || "(제목 없음)";
 
-        const locationSpan = document.createElement('div');
-        locationSpan.className = 'location';
+        const author = document.createElement("div");
+        author.className = "author-row"; // CSS에서 margin-top: auto로 밀어냄
+        author.textContent = `작가: ${b.author || "-"}`;
 
-        const doorLabel = formatLocationNumber(book.door_no);
-        const slotLabel = formatLocationNumber(book.slot_no);
+        const barcode = document.createElement("div");
+        barcode.className = "barcode-row";
+        barcode.textContent = `바코드: ${b.id || "-"}`;
 
-        // 🔹 7번문 / 9번칸 형식 + 숫자 파란색 & 볼드
-        locationSpan.innerHTML = `
-          <span class="loc-number">${doorLabel}</span>번문 /
-          <span class="loc-number">${slotLabel}</span>번칸
-        `;
+        leftCol.append(title, author, barcode);
 
-        titleRow.appendChild(titleSpan);
-        titleRow.appendChild(locationSpan);
+        // --- 오른쪽 구역: 위치(위) --- [공백] --- 버튼(아래)
+        const rightCol = document.createElement("div");
+        rightCol.className = "card-right";
 
-        const meta1 = document.createElement('div');
-        meta1.className = 'meta';
-        meta1.textContent = `작가: ${book.author || '-'}`;
+        const loc = document.createElement("div");
+        loc.className = "location";
+        loc.innerHTML =
+          `<span class="loc-number">${fmt(b.door_no)}</span>번문 / ` +
+          `<span class="loc-number">${fmt(b.slot_no)}</span>번칸`;
+        
+        rightCol.append(loc);
 
-        const meta2 = document.createElement('div');
-        meta2.className = 'meta';
-        meta2.textContent = `바코드 번호: ${book.id || '-'}`;
+        // 버튼 추가 로직
+        const imgUrl = doorImg(b.door_no);
+        if (imgUrl) {
+          const btn = document.createElement("button");
+          btn.className = "view-btn";
+          btn.textContent = "위치보기";
+          btn.onclick = () => {
+            overlayImg.src = imgUrl;
+            overlay.classList.add("show");
+          };
+          rightCol.append(btn);
+        } else {
+          const no = document.createElement("div");
+          no.className = "view-disabled";
+          no.textContent = "이미지 없음";
+          rightCol.append(no);
+        }
 
-        const note = document.createElement('div');
-        note.className = 'note';
-        note.textContent = book.note ? `비고: ${book.note}` : '';
-
-        card.appendChild(titleRow);
-        card.appendChild(meta1);
-        card.appendChild(meta2);
-        if (book.note) card.appendChild(note);
-
+        // 왼쪽, 오른쪽 합치기
+        card.append(leftCol, rightCol);
         resultsDiv.appendChild(card);
       });
     }
 
-    function searchBooks() {
-      const field = document.getElementById('searchField').value;
-      const keywordRaw = document.getElementById('searchInput').value.trim();
-
-      if (!keywordRaw) {
-        renderResults([]);
+    function search() {
+      const field = document.getElementById("searchField").value;
+      const q = document.getElementById("searchInput").value.trim();
+      if (!q) {
+        render([]); // 검색어 없으면 초기화
         return;
       }
 
-      const keyword = keywordRaw;
-      const lowerKeyword = keyword.toLowerCase();
+      const ql = q.toLowerCase();
 
-      const filtered = books.filter(book => {
-        let value = '';
-
-        if (field === 'title') value = book.title || '';
-        else if (field === 'author') value = book.author || '';
-        else if (field === 'id') value = book.id || '';
-
-        if (!value) return false;
-
-        if (field === 'id') {
-          // 바코드 검색: 숫자 문자열 그대로 포함 여부
-          return value.includes(keyword);
-        }
-
-        // 제목/작가: 소문자 변환 후 부분 일치
-        return value.toLowerCase().includes(lowerKeyword);
+      const list = books.filter((b) => {
+        let v =
+          field === "title"
+            ? b.title
+            : field === "author"
+            ? b.author
+            : field === "id"
+            ? b.id
+            : "";
+        if (!v) return false;
+        return field === "id"
+          ? v.includes(q)
+          : v.toLowerCase().includes(ql);
       });
 
-      renderResults(filtered);
+      render(list);
     }
 
-    // 이벤트 바인딩
-    document.getElementById('searchBtn').addEventListener('click', searchBooks);
+    document.getElementById("searchBtn").onclick = search;
+    document.getElementById("searchInput").onkeydown = (e) => {
+      if (e.key === "Enter") search();
+    };
 
-    document.getElementById('searchInput').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        searchBooks();
+    async function load() {
+      try {
+        const [bookSnap, doorSnap] = await Promise.all([
+          getDocs(collection(db, "books")),
+          getDocs(collection(db, "doors")),
+        ]);
+
+        books = bookSnap.docs.map((d) => {
+          const x = d.data() || {};
+          return {
+            title: x.title || "",
+            author: x.author || "",
+            id: x.book_barcode || d.id,
+            door_no: x.door_no || "",
+            slot_no: x.slot_no || "",
+          };
+        });
+
+        doors = {};
+        doorSnap.docs.forEach((d) => {
+          const data = d.data() || {};
+          if (data.image_url) {
+            doors[String(d.id)] = data.image_url;
+            const n = parseInt(d.id, 10);
+            if (!Number.isNaN(n)) doors[String(n)] = data.image_url;
+          }
+        });
+      } catch (error) {
+        console.error("데이터 로딩 실패:", error);
+        resultsDiv.textContent = "데이터를 불러오는 중 오류가 발생했습니다.";
       }
-    });
+    }
 
-    // 페이지 로드 시 Firestore에서 전체 도서 목록 로딩
-    loadBooksFromFirebase();
+    load();
   </script>
 </body>
 </html>
