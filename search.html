@@ -6,246 +6,99 @@
   <title>거북이도서관 도서 검색</title>
 
   <style>
-    /* 1. 기본 폰트 설정 */
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      margin: 0;
-      padding: 16px;
-      background: #f5f5f5;
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+      margin:0;
+      padding:16px;
+      background:#f5f5f5;
     }
 
-    /* 2. 폰트 상속 (모든 버튼 글씨체 통일) */
-    button, input, select {
-      font-family: inherit;
-    }
+    button,input,select { font-family: inherit; }
 
     .app {
-      max-width: 600px;
-      margin: 0 auto;
-      background: #fff;
-      border-radius: 12px;
-      padding: 16px;
-      box-shadow: 0 2px 6px rgba(0,0,0,.08);
-      box-sizing: border-box;
+      max-width:600px;
+      margin:0 auto;
+      background:#fff;
+      border-radius:12px;
+      padding:16px;
+      box-shadow:0 2px 6px rgba(0,0,0,.08);
+      box-sizing:border-box;
     }
 
-    h1 {
-      margin: 0 0 12px;
-      font-size: 20px;
-      font-weight: 700;
-      color: #333;
-    }
+    h1 { margin:0 0 12px; font-size:20px; font-weight:700; color:#333; }
 
-    .info {
-      font-size: 13px;
-      color: #666;
-      margin-bottom: 12px;
-    }
+    .info { font-size:13px; color:#666; margin-bottom:12px; }
 
-    /* --- 검색 영역 --- */
+    /* 🔹 검색 영역 — 버튼 칸을 더 줄이고 입력창을 최대 확장 */
     .search-row {
-      display: grid;
-      /* 칼럼이 줄어들 수 있게 minmax 사용 */
-      grid-template-columns: minmax(0, 110px) minmax(0, 1fr) minmax(0, 90px);
-      gap: 8px;
-      margin-bottom: 16px;
-      align-items: center;
+      display:grid;
+      grid-template-columns:
+        minmax(0, 105px)   /* 드롭다운 */
+        minmax(0, 1fr)     /* 검색 입력창 (가장 넓게) */
+        minmax(0, 62px);   /* 🔻 버튼 영역 더 축소 */
+      gap:8px;
+      margin-bottom:16px;
+      align-items:center;
     }
 
-    /* 그리드 안의 요소들이 폭을 강제로 줄일 수 있게 */
     .search-row > * {
-      min-width: 0;
-      box-sizing: border-box;
+      min-width:0;
+      box-sizing:border-box;
     }
 
-    select, input {
-      font-size: 15px;
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #ddd;
-      outline: none;
-      background: #fff;
-      height: 42px;
-      box-sizing: border-box;
+    select,input {
+      font-size:15px;
+      padding:10px;
+      border-radius:8px;
+      border:1px solid #ddd;
+      background:#fff;
+      height:42px;
     }
 
-    input:focus {
-      border-color: #1976d2;
+    input:focus { border-color:#1976d2; }
+
+    /* 🔹 버튼 폰트 크기 그대로 유지 — 대신 가로 패딩만 살짝 축소 */
+    #searchBtn {
+      padding:0 10px;      /* ← 기존보다 살짝만 줄임 */
+      height:42px;
+      border-radius:8px;
+      border:none;
+      background:#1976d2;
+      color:#fff;
+      font-weight:600;
+      cursor:pointer;
+      white-space:nowrap;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      transition:background .2s;
     }
 
-    /* 검색 버튼 스타일 */
-    button#searchBtn {
-      padding: 0 12px;       /* 살짝 줄여서 여유 확보 */
-      height: 42px;
-      font-size: 15px;
-      border-radius: 8px;
-      border: none;
-      background: #1976d2;
-      color: #fff;
-      font-weight: 600;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: background 0.2s;
-      box-sizing: border-box;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    #searchBtn:hover { background:#145ca3; }
+
+    /* 매우 좁은 기기 보호용 */
+    @media (max-width:360px){
+      .search-row { grid-template-columns:1fr; }
+      #searchBtn { width:100%; }
     }
 
-    button#searchBtn:hover {
-      background: #145ca3;
-    }
-
-    /* 화면이 아주 좁을 때는 세로로 쌓이게 (백업용) */
-    @media (max-width: 380px) {
-      .search-row {
-        grid-template-columns: 1fr;
-      }
-      #searchBtn {
-        width: 100%;
-      }
-    }
-
-    /* --- 카드 스타일 (수정됨) --- */
-    .card {
-      background: #fafafa;
-      border-radius: 10px;
-      padding: 14px 12px;
-      border: 1px solid #eee;
-      margin-bottom: 10px;
-
-      /* 좌우 배치 설정 */
-      display: flex;
-      justify-content: space-between;
-
-      /* 양쪽 높이를 똑같이 늘려서 바닥 정렬 기준을 맞춤 */
-      align-items: stretch;
-      gap: 12px;
-    }
-
-    /* 왼쪽 구역 (제목 -공백- 작가/바코드) */
-    .card-left {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* 오른쪽 구역 (위치 -공백- 버튼) */
-    .card-right {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between; /* 내용을 위/아래 끝으로 벌림 */
-      align-items: flex-end;          /* 우측 정렬 */
-      flex-shrink: 0;
-      min-width: 90px;
-      gap: 6px;
-    }
-
-    .title {
-      font-size: 15px;
-      font-weight: 700;
-      color: #222;
-      line-height: 1.3;
-      word-break: break-all;
-    }
-
-    /* 작가 텍스트를 아래로 밀어버리는 속성 */
-    .author-row {
-      margin-top: auto; /* 위쪽 여백을 자동으로 채워서 바닥으로 밀림 */
-      padding-top: 10px; /* 제목과 너무 붙지 않도록 최소 여백 확보 */
-
-      font-size: 13px;
-      color: #666;
-      line-height: 1.3;
-    }
-
-    .barcode-row {
-      font-size: 13px;
-      color: #666;
-      line-height: 1.3;
-      margin-top: 2px; /* 작가와 바코드 사이 좁은 간격 */
-    }
-
-    .location {
-      font-size: 14px;
-      white-space: nowrap;
-      text-align: right;
-      color: #444;
-    }
-
-    .loc-number {
-      color: #1976d2;
-      font-weight: 700;
-      font-size: 15px;
-    }
-
-    /* 위치보기 버튼 스타일 */
-    .view-btn {
-      height: 40px;
-      padding: 0 12px;
-      font-size: 15px;
-      font-weight: 600;
-
-      border-radius: 8px;
-      border: none;
-      background: #1976d2;
-      color: #fff;
-      cursor: pointer;
-      width: 100%;
-      text-align: center;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .view-btn:hover {
-      background: #115293;
-    }
-
-    .view-disabled {
-      font-size: 12px;
-      color: #aaa;
-      margin-top: auto; /* 버튼 없을 때도 텍스트를 아래로 */
-    }
-
-    /* 팝업 스타일 */
-    .overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.6);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      backdrop-filter: blur(2px);
-    }
-
-    .overlay.show {
-      display: flex;
-    }
-
-    .overlay-content {
-      background: #fff;
-      border-radius: 12px;
-      padding: 8px;
-      max-width: 90vw;
-      max-height: 85vh;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    }
-
-    .overlay-img {
-      display: block;
-      max-width: 100%;
-      max-height: 80vh;
-      border-radius: 8px;
-    }
-
-    #resultCount {
-      font-size: 13px;
-      font-weight: 600;
-      color: #444;
-      margin: 4px 0 12px;
-    }
+    /* 나머지 카드/팝업 코드는 동일 */
+    .card{background:#fafafa;border-radius:10px;padding:14px 12px;border:1px solid #eee;margin-bottom:10px;display:flex;justify-content:space-between;align-items:stretch;gap:12px;}
+    .card-left{flex:1;display:flex;flex-direction:column;}
+    .card-right{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;flex-shrink:0;min-width:90px;gap:6px;}
+    .title{font-size:15px;font-weight:700;color:#222;line-height:1.3;word-break:break-all;}
+    .author-row{margin-top:auto;padding-top:10px;font-size:13px;color:#666;line-height:1.3;}
+    .barcode-row{font-size:13px;color:#666;line-height:1.3;margin-top:2px;}
+    .location{font-size:14px;white-space:nowrap;text-align:right;color:#444;}
+    .loc-number{color:#1976d2;font-weight:700;font-size:15px;}
+    .view-btn{height:40px;padding:0 12px;font-size:15px;font-weight:600;border-radius:8px;border:none;background:#1976d2;color:#fff;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;}
+    .view-btn:hover{background:#115293;}
+    .view-disabled{font-size:12px;color:#aaa;margin-top:auto;}
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(2px);}
+    .overlay.show{display:flex;}
+    .overlay-content{background:#fff;border-radius:12px;padding:8px;max-width:90vw;max-height:85vh;box-shadow:0 4px 12px rgba(0,0,0,.2);}
+    .overlay-img{display:block;max-width:100%;max-height:80vh;border-radius:8px;}
+    #resultCount{font-size:13px;font-weight:600;color:#444;margin:4px 0 12px;}
   </style>
 </head>
 
@@ -280,168 +133,146 @@
     import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
     const app = initializeApp({
-      apiKey: "AIzaSyA_BkguverEd0Cz8XA24ktcAodk9TH-GeI",
-      authDomain: "turtle-library-book-db.firebaseapp.com",
-      projectId: "turtle-library-book-db",
-      storageBucket: "turtle-library-book-db.firebasestorage.app"
+      apiKey:"AIzaSyA_BkguverEd0Cz8XA24ktcAodk9TH-GeI",
+      authDomain:"turtle-library-book-db.firebaseapp.com",
+      projectId:"turtle-library-book-db",
+      storageBucket:"turtle-library-book-db.firebasestorage.app"
     });
 
     const db = getFirestore(app);
 
-    let books = [];
-    let doors = {};
+    let books=[]; let doors={};
 
-    const resultsDiv = document.getElementById("results");
-    const countDiv   = document.getElementById("resultCount");
-    const overlay    = document.getElementById("overlay");
-    const overlayImg = document.getElementById("overlayImg");
+    const resultsDiv=document.getElementById("results");
+    const countDiv=document.getElementById("resultCount");
+    const overlay=document.getElementById("overlay");
+    const overlayImg=document.getElementById("overlayImg");
 
-    overlay.addEventListener("click", () => overlay.classList.remove("show"));
+    overlay.addEventListener("click",()=>overlay.classList.remove("show"));
 
-    function fmt(n) {
-      if (!n) return "-";
-      const v = parseInt(n, 10);
-      return Number.isNaN(v) ? n : String(v);
+    function fmt(n){ if(!n) return "-"; const v=parseInt(n,10); return Number.isNaN(v)?n:String(v); }
+
+    function doorImg(door){
+      if(!door) return null;
+      const s=String(door);
+      if(doors[s]) return doors[s];
+      const n=parseInt(s,10);
+      return doors[String(n)]||null;
     }
 
-    function doorImg(door) {
-      if (!door) return null;
-      const s = String(door);
-      if (doors[s]) return doors[s];
-      const n = parseInt(s, 10);
-      return doors[String(n)] || null;
-    }
-
-    function render(list) {
-      resultsDiv.innerHTML = "";
-
-      if (!list.length) {
-        countDiv.textContent = "";
-        resultsDiv.innerHTML = "<div style='text-align:center; color:#888; padding:20px;'>검색 결과가 없습니다.</div>";
+    function render(list){
+      resultsDiv.innerHTML="";
+      if(!list.length){
+        countDiv.textContent="";
+        resultsDiv.innerHTML="<div style='text-align:center;color:#888;padding:20px;'>검색 결과가 없습니다.</div>";
         return;
       }
 
-      countDiv.textContent = `검색 결과: ${list.length}건`;
+      countDiv.textContent=`검색 결과: ${list.length}건`;
 
-      list.forEach((b) => {
-        const card = document.createElement("div");
-        card.className = "card";
+      list.forEach((b)=>{
+        const card=document.createElement("div");
+        card.className="card";
 
-        // --- 왼쪽 구역: 제목(위) --- [공백] --- 작가/바코드(아래)
-        const leftCol = document.createElement("div");
-        leftCol.className = "card-left";
+        const left=document.createElement("div");
+        left.className="card-left";
 
-        const title = document.createElement("div");
-        title.className = "title";
-        title.textContent = b.title || "(제목 없음)";
+        const title=document.createElement("div");
+        title.className="title";
+        title.textContent=b.title||"(제목 없음)";
 
-        const author = document.createElement("div");
-        author.className = "author-row";
-        author.textContent = `작가: ${b.author || "-"}`;
+        const author=document.createElement("div");
+        author.className="author-row";
+        author.textContent=`작가: ${b.author||"-"}`;
 
-        const barcode = document.createElement("div");
-        barcode.className = "barcode-row";
-        barcode.textContent = `바코드: ${b.id || "-"}`;
+        const barcode=document.createElement("div");
+        barcode.className="barcode-row";
+        barcode.textContent=`바코드: ${b.id||"-"}`;
 
-        leftCol.append(title, author, barcode);
+        left.append(title,author,barcode);
 
-        // --- 오른쪽 구역: 위치(위) --- [공백] --- 버튼(아래)
-        const rightCol = document.createElement("div");
-        rightCol.className = "card-right";
+        const right=document.createElement("div");
+        right.className="card-right";
 
-        const loc = document.createElement("div");
-        loc.className = "location";
-        loc.innerHTML =
-          `<span class="loc-number">${fmt(b.door_no)}</span>번문 / ` +
+        const loc=document.createElement("div");
+        loc.className="location";
+        loc.innerHTML=
+          `<span class="loc-number">${fmt(b.door_no)}</span>번문 / `+
           `<span class="loc-number">${fmt(b.slot_no)}</span>번칸`;
 
-        rightCol.append(loc);
+        right.append(loc);
 
-        const imgUrl = doorImg(b.door_no);
-        if (imgUrl) {
-          const btn = document.createElement("button");
-          btn.className = "view-btn";
-          btn.textContent = "위치보기";
-          btn.onclick = () => {
-            overlayImg.src = imgUrl;
-            overlay.classList.add("show");
-          };
-          rightCol.append(btn);
+        const img=doorImg(b.door_no);
+        if(img){
+          const btn=document.createElement("button");
+          btn.className="view-btn";
+          btn.textContent="위치보기";
+          btn.onclick=()=>{ overlayImg.src=img; overlay.classList.add("show"); };
+          right.append(btn);
         } else {
-          const no = document.createElement("div");
-          no.className = "view-disabled";
-          no.textContent = "이미지 없음";
-          rightCol.append(no);
+          const no=document.createElement("div");
+          no.className="view-disabled";
+          no.textContent="이미지 없음";
+          right.append(no);
         }
 
-        card.append(leftCol, rightCol);
+        card.append(left,right);
         resultsDiv.appendChild(card);
       });
     }
 
-    function search() {
-      const field = document.getElementById("searchField").value;
-      const q = document.getElementById("searchInput").value.trim();
-      if (!q) {
-        render([]);
-        return;
-      }
+    function search(){
+      const field=document.getElementById("searchField").value;
+      const q=document.getElementById("searchInput").value.trim();
+      if(!q){ render([]); return; }
 
-      const ql = q.toLowerCase();
+      const ql=q.toLowerCase();
 
-      const list = books.filter((b) => {
-        let v =
-          field === "title"
-            ? b.title
-            : field === "author"
-            ? b.author
-            : field === "id"
-            ? b.id
-            : "";
-        if (!v) return false;
-        return field === "id"
-          ? v.includes(q)
-          : v.toLowerCase().includes(ql);
+      const list=books.filter((b)=>{
+        let v=
+          field==="title" ? b.title :
+          field==="author" ? b.author :
+          field==="id" ? b.id : "";
+        if(!v) return false;
+        return field==="id" ? v.includes(q) : v.toLowerCase().includes(ql);
       });
 
       render(list);
     }
 
-    document.getElementById("searchBtn").onclick = search;
-    document.getElementById("searchInput").onkeydown = (e) => {
-      if (e.key === "Enter") search();
-    };
+    document.getElementById("searchBtn").onclick=search;
+    document.getElementById("searchInput").onkeydown=(e)=>{ if(e.key==="Enter") search(); };
 
-    async function load() {
-      try {
-        const [bookSnap, doorSnap] = await Promise.all([
-          getDocs(collection(db, "books")),
-          getDocs(collection(db, "doors")),
+    async function load(){
+      try{
+        const [bookSnap,doorSnap]=await Promise.all([
+          getDocs(collection(db,"books")),
+          getDocs(collection(db,"doors")),
         ]);
 
-        books = bookSnap.docs.map((d) => {
-          const x = d.data() || {};
-          return {
-            title: x.title || "",
-            author: x.author || "",
-            id: x.book_barcode || d.id,
-            door_no: x.door_no || "",
-            slot_no: x.slot_no || "",
+        books=bookSnap.docs.map((d)=>{
+          const x=d.data()||{};
+          return{
+            title:x.title||"",
+            author:x.author||"",
+            id:x.book_barcode||d.id,
+            door_no:x.door_no||"",
+            slot_no:x.slot_no||"",
           };
         });
 
-        doors = {};
-        doorSnap.docs.forEach((d) => {
-          const data = d.data() || {};
-          if (data.image_url) {
-            doors[String(d.id)] = data.image_url;
-            const n = parseInt(d.id, 10);
-            if (!Number.isNaN(n)) doors[String(n)] = data.image_url;
+        doors={};
+        doorSnap.docs.forEach((d)=>{
+          const data=d.data()||{};
+          if(data.image_url){
+            doors[String(d.id)]=data.image_url;
+            const n=parseInt(d.id,10);
+            if(!Number.isNaN(n)) doors[String(n)]=data.image_url;
           }
         });
-      } catch (error) {
-        console.error("데이터 로딩 실패:", error);
-        resultsDiv.textContent = "데이터를 불러오는 중 오류가 발생했습니다.";
+      } catch(err){
+        console.error("데이터 로딩 실패:",err);
+        resultsDiv.textContent="데이터를 불러오는 중 오류가 발생했습니다.";
       }
     }
 
