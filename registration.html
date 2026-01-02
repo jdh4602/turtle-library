@@ -2,53 +2,206 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>Turtle Library Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>거북이도서관 · 도서 등록 관리자</title>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 16px;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f5f5f5;
+    }
+
+    .app {
+      max-width: 720px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.08);
+    }
+
+    h1 {
+      margin: 0 0 4px;
+      font-size: 20px;
+    }
+
+    h2 {
+      margin: 16px 0 8px;
+      font-size: 16px;
+    }
+
+    .section {
+      padding: 12px 0;
+      border-top: 1px solid #eee;
+    }
+
+    .label {
+      font-size: 13px;
+      margin-bottom: 4px;
+      color: #555;
+      display: block;
+    }
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px 12px;
+      font-size: 15px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #1976d2;
+      box-shadow: 0 0 0 2px rgba(25,118,210,.15);
+    }
+
+    /* 🔹 input + 버튼 정렬 개선 */
+    .input-row {
+      display: flex;
+      align-items: stretch;   /* 높이 동일하게 */
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .input-row input {
+      flex: 1 1 auto;
+    }
+
+    .input-row button {
+      flex: 0 0 auto;
+      min-width: 96px;
+      padding: 0 12px;
+      font-size: 13px;
+
+      /* 버튼 높이를 input과 동일하게 */
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    button {
+      border: 1px solid #1976d2;
+      background: #1976d2;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #145ca3;
+      border-color: #145ca3;
+    }
+
+    .info-box {
+      margin-top: 8px;
+      font-size: 13px;
+      color: #333;
+    }
+
+    .info-box span.label {
+      color: #888;
+      margin-right: 4px;
+      display: inline;
+    }
+
+    .row-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .log-box {
+      margin-top: 8px;
+      font-size: 13px;
+      color: #333;
+      background: #fafafa;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 8px 10px;
+      max-height: 220px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      box-sizing: border-box;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+        "Courier New", monospace;
+    }
+  </style>
 </head>
+
 <body>
-  <h1>도서 등록 관리자 페이지</h1>
+  <div class="app">
+    <h1>도서 등록 관리자 페이지</h1>
 
-  <!-- STEP 1: 위치 스캔 -->
-  <section>
-    <h2>Step 1. 문-칸 바코드 스캔</h2>
-    <p>문-칸 바코드를 스캔하면 현재 위치가 설정됩니다. (예: 00101)</p>
-    <input id="shelfInput" placeholder="문-칸 바코드 (예: 00101)" autofocus />
-    <div id="currentLocation">현재 위치: (미설정)</div>
-  </section>
+    <!-- 책장 바코드 번호 -->
+    <div class="section">
+      <h2>책장 바코드 번호</h2>
 
-  <hr />
+      <input
+        id="shelfInput"
+        placeholder="문-칸 바코드 (예: 00101)"
+        autocomplete="off"
+        autofocus
+      />
 
-  <!-- STEP 2: ISBN 스캔 및 정보 조회 -->
-  <section>
-    <h2>Step 2. ISBN 스캔 → 제목/저자 조회</h2>
-    <input id="isbnInput" placeholder="ISBN 바코드 스캔" />
-    <button id="fetchBookBtn" type="button">도서 정보 조회</button>
-    <div>
-      <label for="titleInput">제목: </label>
-      <input id="titleInput" />
+      <div class="info-box">
+        <span class="label">현재 위치:</span>
+        <span id="currentLocation">(미설정)</span>
+      </div>
     </div>
-    <div>
-      <label for="authorInput">저자: </label>
-      <input id="authorInput" />
+
+    <!-- ISBN 바코드 번호 -->
+    <div class="section">
+      <h2>ISBN 바코드 번호</h2>
+
+      <div class="input-row">
+        <input
+          id="isbnInput"
+          placeholder="ISBN 바코드 스캔"
+          autocomplete="off"
+        />
+        <button id="fetchBookBtn" type="button">도서 정보 조회</button>
+      </div>
+
+      <div class="row-2col">
+        <div>
+          <span class="label">제목</span>
+          <input id="titleInput" placeholder="도서 제목" />
+        </div>
+        <div>
+          <span class="label">저자</span>
+          <input id="authorInput" placeholder="저자명" />
+        </div>
+      </div>
     </div>
-  </section>
 
-  <hr />
+    <!-- 도서 바코드 번호 -->
+    <div class="section">
+      <h2>도서 바코드 번호</h2>
 
-  <!-- STEP 3: 책 고유 바코드 스캔 → Firestore 저장 -->
-  <section>
-    <h2>Step 3. 책 바코드 스캔 → DB 저장</h2>
-    <input id="bookBarcodeInput" placeholder="책 고유 바코드 (숫자 3~20자리)" />
-    <div>
-      <button id="saveBtn" type="button">저장(수동)</button>
+      <div class="input-row">
+        <input
+          id="bookBarcodeInput"
+          placeholder="책 고유 바코드 (숫자 3~20자리)"
+          autocomplete="off"
+        />
+        <button id="saveBtn" type="button">도서 정보 저장</button>
+      </div>
     </div>
-  </section>
 
-  <hr />
+    <!-- 로그 -->
+    <div class="section">
+      <h2>등록 로그</h2>
+      <pre id="log" class="log-box"></pre>
+    </div>
+  </div>
 
-  <!-- 로그 출력 -->
-  <pre id="log"></pre>
-
-  <!-- Firebase compat SDK (로컬 file://에서도 동작하게 compat 버전 사용) -->
+  <!-- Firebase compat SDK -->
   <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore-compat.js"></script>
 

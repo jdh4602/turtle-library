@@ -19,7 +19,7 @@ const firebaseConfig = {
   appId: "1:611950738800:web:7d9474d358c0a33bd6e3b5",
 };
 
-// 전역 firebase 객체 사용
+// compat SDK 초기화
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
@@ -36,70 +36,82 @@ const authorInput = document.getElementById("authorInput");
 
 const bookBarcodeInput = document.getElementById("bookBarcodeInput");
 const saveBtn = document.getElementById("saveBtn");
-
 const log = document.getElementById("log");
 
 // =====================
-// 3. 현재 위치 상태 (Step 1에서 설정)
+// 3. 상태 값
 // =====================
 let currentLocation = {
-  door_no: null,
-  slot_no: null,
-  location_code: null,
+  door_no: "",
+  slot_no: "",
+  location_code: "",
 };
 
 // =====================
-// 4. Step 1 - 문·칸 바코드 스캔
+// 4. Step 1 - 문-칸 바코드 스캔 → 현재 위치 설정
 // =====================
+
+// 엔터 입력 시 위치 설정
 shelfInput.addEventListener("keydown", (e) => {
-  if (e.key !== "Enter") return;
+  if (e.key === "Enter") {
+    const code = shelfInput.value.trim();
 
-  const code = shelfInput.value.trim(); // 예: "00101"
-  if (code.length !== 5) {
-    appendLog(`[ERROR] 문-칸 코드는 5자리여야 합니다: ${code}`);
-    return;
+    if (!code) {
+      alert("문-칸 바코드를 입력해 주세요. (예: 00101)");
+      return;
+    }
+    if (!/^[0-9]{5}$/.test(code)) {
+      alert("문-칸 바코드는 숫자 5자리여야 합니다. (예: 00101)");
+      appendLog(`[ERROR] 문-칸 코드는 5자리여야 합니다: ${code}`);
+      return;
+    }
+
+    const door_no = code.slice(0, 3); // "001"
+    const slot_no = code.slice(3);    // "01"
+
+    currentLocation = {
+      door_no,
+      slot_no,
+      location_code: code,
+    };
+
+    currentLocationDiv.textContent =
+      `현재 위치: 문 ${door_no}, 칸 ${slot_no} (코드: ${code})`;
+    appendLog(`[INFO] 위치 설정 완료 → ${JSON.stringify(currentLocation)}`);
+
+    shelfInput.value = "";
+    isbnInput.focus(); // 다음 단계로 포커스
   }
-
-  const door_no = code.slice(0, 3); // "001"
-  const slot_no = code.slice(3);    // "01"
-
-  currentLocation = {
-    door_no,
-    slot_no,
-    location_code: code,
-  };
-
-  currentLocationDiv.textContent =
-    `현재 위치: 문 ${door_no}, 칸 ${slot_no} (코드: ${code})`;
-  appendLog(`[INFO] 위치 설정 완료 → ${JSON.stringify(currentLocation)}`);
-
-  shelfInput.value = "";
-  isbnInput.focus(); // 다음 단계로 포커스
 });
 
 // =====================
 // 5. Step 2 - ISBN 스캔 → 도서 정보 조회
 // =====================
 
-// 버튼 클릭 시 조회
-fetchBookBtn.addEventListener("click", () => {
-  const isbn = isbnInput.value.trim();
-  if (!isbn) {
-    alert("ISBN을 입력해 주세요.");
-    return;
-  }
-  fetchBookInfo(isbn);
-});
-
-// 엔터로도 조회
+// 엔터 → 조회 버튼 클릭
 isbnInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
     fetchBookBtn.click();
   }
 });
 
-// 메인 조회 로직: 국립중앙도서관 → 실패 시 Google Books
+// 버튼 클릭 시 조회
+fetchBookBtn.addEventListener("click", () => {
+  const isbn = isbnInput.value.trim();
+  if (!isbn) {
+    alert("ISBN 바코드를 입력해 주세요.");
+    isbnInput.focus();
+    return;
+  }
+
+  fetchBookInfo(isbn);
+});
+
+// 실제 조회 로직
 async function fetchBookInfo(isbn) {
+  // 기존 값 초기화는 하지 않음 (원하면 여기에서 title/author 지울 수 있음)
+  appendLog(`[INFO] ISBN 조회 시작 → ${isbn}`);
+
   // 1) 국립중앙도서관 먼저 시도
   if (NLK_API_KEY && !NLK_API_KEY.includes("여기에_국립중앙도서관")) {
     try {
@@ -115,13 +127,13 @@ async function fetchBookInfo(isbn) {
         bookBarcodeInput.focus();
         return;
       } else {
-        appendLog("[INFO][NLK] 결과 없음 → Google Books로 폴백.");
+        appendLog("[WARN][NLK] 결과 값 없음 → Google Books로 폴백.");
       }
     } catch (err) {
-      appendLog(`[WARN][NLK] 조회 오류 → Google Books로 폴백: ${err.message}`);
+      appendLog(`[ERROR][NLK] 도서 정보 조회 실패: ${err.message} → Google Books로 폴백.`);
     }
   } else {
-    appendLog("[INFO] NLK API 키 미설정 → Google Books만 사용.");
+    appendLog("[INFO][NLK] API 키 미설정 또는 플레이스홀더 상태 → Google Books로 바로 진행.");
   }
 
   // 2) Google Books 폴백
@@ -139,10 +151,18 @@ async function fetchBookInfo(isbn) {
     } else {
       appendLog("[WARN][Google] 해당 ISBN으로 책 정보를 찾지 못했습니다.");
       alert("책 정보를 찾지 못했습니다. 제목/저자를 직접 입력해 주세요.");
+      // 실패 시 제목 칸으로 포커스 이동
+      setTimeout(() => {
+        titleInput.focus();
+      }, 0);
     }
   } catch (err) {
     appendLog(`[ERROR][Google] 도서 정보 조회 실패: ${err.message}`);
     alert("도서 정보 조회 중 오류가 발생했습니다.");
+    // 오류 시에도 제목 칸으로 포커스 이동
+    setTimeout(() => {
+      titleInput.focus();
+    }, 0);
   }
 }
 
@@ -163,16 +183,36 @@ async function fetchFromNLK(isbn) {
   }
 
   const data = await res.json();
-  const total = parseInt(data.TOTAL_COUNT ?? "0", 10);
 
-  if (!total || !data.docs || !Array.isArray(data.docs) || data.docs.length === 0) {
+  // 응답 구조가 버전마다 달라서 최대한 넓게 커버
+  const list =
+    data.docs ||
+    data.seojiList ||
+    data.items ||
+    data.result ||
+    data.rows ||
+    [];
+
+  if (!Array.isArray(list) || list.length === 0) {
     return null;
   }
 
-  const first = data.docs[0];
+  const first = list[0] || {};
+  const title =
+    first.TITLE ||
+    first.title ||
+    first.bookname ||
+    first.book_name ||
+    "";
+  const authorRaw =
+    first.AUTHOR ||
+    first.author ||
+    first.authors ||
+    first.author_name ||
+    "";
 
-  const title = first.TITLE || "";
-  const author = first.AUTHOR || "";
+  const author =
+    Array.isArray(authorRaw) ? authorRaw.join(", ") : String(authorRaw || "");
 
   if (!title && !author) {
     return null;
@@ -202,7 +242,9 @@ async function fetchFromGoogleBooks(isbn) {
   const info = data.items[0].volumeInfo || {};
   const title = info.title || "";
   const author =
-    (info.authors && Array.isArray(info.authors) ? info.authors.join(", ") : "") || "";
+    (info.authors && Array.isArray(info.authors)
+      ? info.authors.join(", ")
+      : "") || "";
 
   if (!title && !author) {
     return null;
@@ -224,7 +266,7 @@ bookBarcodeInput.addEventListener("keydown", (e) => {
 
 saveBtn.addEventListener("click", async () => {
   const book_barcode = bookBarcodeInput.value.trim();
-  const isbn = isbnInput.value.trim();     // 입력칸 값 그대로 사용
+  const isbn = isbnInput.value.trim(); // 입력칸 값 그대로 사용
   const title = titleInput.value.trim();
   const author = authorInput.value.trim();
 
@@ -233,7 +275,7 @@ saveBtn.addEventListener("click", async () => {
     return;
   }
 
-  // 책 바코드: 숫자 3~20자리 허용 (5자리, 8자리 등 모두 OK)
+  // 책 바코드: 숫자 3~20자리 허용
   if (!/^[0-9]{3,20}$/.test(book_barcode)) {
     alert("책 바코드는 숫자 3~20자리로 입력해 주세요.");
     return;
@@ -247,19 +289,18 @@ saveBtn.addEventListener("click", async () => {
   try {
     const ref = db.collection("books").doc(book_barcode);
 
-    await ref.set(
-      {
-        book_barcode,
-        isbn: isbn || null,
-        title,
-        author,
-        door_no: currentLocation.door_no,
-        slot_no: currentLocation.slot_no,
-        location_code: currentLocation.location_code,
-        location_updated_at: firebase.firestore.FieldValue.serverTimestamp(),
-      },
-      { merge: true }
-    );
+    const payload = {
+      book_barcode,
+      isbn: isbn || null,
+      title,
+      author: author || null,
+      door_no: currentLocation.door_no,
+      slot_no: currentLocation.slot_no,
+      location_code: currentLocation.location_code,
+      location_updated_at: firebase.firestore.FieldValue.serverTimestamp(),
+    };
+
+    await ref.set(payload, { merge: false });
 
     appendLog(
       `[OK] ${book_barcode} 저장/업데이트 완료 → 위치 ${currentLocation.door_no}-${currentLocation.slot_no} (${currentLocation.location_code}), ISBN: ${isbn || "(없음)"}`
