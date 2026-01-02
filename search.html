@@ -64,19 +64,25 @@
       padding: 8px 10px;
     }
 
+    /* 🔹 registration과 동일한 계열의 파란색 버튼 스타일 */
     button {
       padding: 8px 12px;
       font-size: 15px;
       border-radius: 8px;
-      border: none;
+      border: 1px solid #1976d2;
       cursor: pointer;
-      background: #222;
+      background: #1976d2;
       color: #fff;
       white-space: nowrap;
     }
 
+    button:hover {
+      background: #145ca3;
+      border-color: #145ca3;
+    }
+
     button:active {
-      opacity: 0.8;
+      opacity: 0.9;
     }
 
     .result-count {
@@ -107,9 +113,15 @@
     }
 
     .location {
-      font-size: 13px;
+      font-size: 15px; /* 책 제목과 동일한 폰트 크기 */
       color: #333;
       white-space: nowrap;
+    }
+
+    /* 🔹 위치 숫자 강조: 파란색 + 볼드 */
+    .loc-number {
+      color: #1976d2;
+      font-weight: 700;
     }
 
     .meta {
@@ -156,15 +168,14 @@
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js';
     import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js';
 
-    // TODO: 여기에 네 Firebase 프로젝트 설정을 넣어줘
-    // Firebase 콘솔 > 프로젝트 설정 > "내 앱" > Web 앱에서 config 복사
+    // Firebase 설정
     const firebaseConfig = {
       apiKey: "AIzaSyA_BkguverEd0Cz8XA24ktcAodk9TH-GeI",
-  authDomain: "turtle-library-book-db.firebaseapp.com",
-  projectId: "turtle-library-book-db",
-  storageBucket: "turtle-library-book-db.firebasestorage.app",
-  messagingSenderId: "611950738800",
-  appId: "1:611950738800:web:7d9474d358c0a33bd6e3b5"
+      authDomain: "turtle-library-book-db.firebaseapp.com",
+      projectId: "turtle-library-book-db",
+      storageBucket: "turtle-library-book-db.firebasestorage.app",
+      messagingSenderId: "611950738800",
+      appId: "1:611950738800:web:7d9474d358c0a33bd6e3b5"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -238,7 +249,12 @@
 
         const doorLabel = formatLocationNumber(book.door_no);
         const slotLabel = formatLocationNumber(book.slot_no);
-        locationSpan.textContent = `문 ${doorLabel} / 칸 ${slotLabel}`;
+
+        // 🔹 7번문 / 9번칸 형식 + 숫자 파란색 & 볼드
+        locationSpan.innerHTML = `
+          <span class="loc-number">${doorLabel}</span>번문 /
+          <span class="loc-number">${slotLabel}</span>번칸
+        `;
 
         titleRow.appendChild(titleSpan);
         titleRow.appendChild(locationSpan);
