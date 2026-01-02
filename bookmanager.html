@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>도서 위치 관리자 페이지</title>
+
+  <style>
+    body { margin:0; padding:16px; font-family:system-ui,-apple-system,sans-serif; background:#f5f5f5; }
+    .app { max-width:720px; margin:0 auto; background:#fff; border-radius:12px; padding:20px;
+      box-shadow:0 2px 10px rgba(0,0,0,.08); }
+    h1 { margin:0 0 4px; font-size:20px; }
+    h2 { margin:16px 0 8px; font-size:16px; }
+    .section { padding:12px 0; border-top:1px solid #eee; }
+    .label { font-size:13px; margin-bottom:4px; color:#555; }
+    input {
+      width:100%; box-sizing:border-box; padding:10px 12px; font-size:15px;
+      border-radius:8px; border:1px solid #ccc; outline:none;
+    }
+    input:focus { border-color:#1976d2; box-shadow:0 0 0 2px rgba(25,118,210,.15); }
+    .info-box { margin-top:8px; font-size:13px; color:#333; }
+    .info-box span.label { color:#888; margin-right:4px; }
+    .status { margin-top:12px; font-size:13px; min-height:18px; }
+    .status.ok { color:#1b5e20; }
+    .status.error { color:#b71c1c; }
+
+    .log-box {
+      margin-top:8px;
+      font-size:13px;
+      color:#333;
+      background:#fafafa;
+      border:1px solid #e0e0e0;
+      border-radius:8px;
+      padding:8px 10px;
+      max-height:200px;
+      overflow-y:auto;
+      white-space:nowrap;
+      font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+    .log-empty {
+      color:#999;
+      font-style:italic;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>도서 위치 관리자 페이지</h1>
+
+    <!-- 도서 바코드 -->
+    <div class="section">
+      <h2>도서 바코드 번호</h2>
+      <input id="bookBarcodeInput" placeholder="도서 바코드를 스캔하세요" autocomplete="off" />
+
+      <div class="info-box">
+        <span class="label">현재 선택된 도서:</span>
+        <span id="currentBookText">(없음)</span>
+      </div>
+    </div>
+
+    <!-- 책장 바코드 -->
+    <div class="section">
+      <h2>책장 바코드 번호</h2>
+      <input id="locationInput" placeholder="책장 바코드를 스캔하세요" autocomplete="off" />
+    </div>
+
+    <!-- 상태 메시지 -->
+    <div class="section">
+      <div id="status" class="status"></div>
+    </div>
+
+    <!-- 업데이트 로그 -->
+    <div class="section">
+      <h2>업데이트 로그</h2>
+      <div id="updateLog" class="log-box">
+        <div class="log-empty">로그 없음</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase CDN (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+  <!-- 페이지 스크립트 -->
+  <script src="bookmanager.js"></script>
+</body>
+</html>
