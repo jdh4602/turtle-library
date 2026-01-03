@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>거북이도서관 도서 관리자페이지 · 로그인</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg-main: #edf2f5;
+      --primary: #00a8ff;
+      --primary-dark: #0084c7;
+      --card-bg: #ffffff;
+      --text-main: #141824;
+      --text-muted: #6c757d;
+      --border-subtle: #dde3ea;
+      --shadow-soft: 0 8px 24px rgba(15, 23, 42, 0.08);
+      --radius-lg: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      background: radial-gradient(circle at top, #f6fbff 0, #edf2f5 55%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-main);
+    }
+
+    .login-wrapper {
+      width: 100%;
+      max-width: 420px;
+      padding: 24px;
+    }
+
+    .login-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      padding: 28px 24px 24px;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+    }
+
+    .login-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+
+    .field-group {
+      margin-bottom: 16px;
+    }
+
+    .field-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .field-input {
+      width: 100%;
+      padding: 10px 11px;
+      font-size: 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border-subtle);
+      background: #f9fafb;
+      outline: none;
+      transition: border-color 0.12s ease, box-shadow 0.12s ease,
+        background 0.12s ease;
+    }
+
+    .field-input:focus {
+      border-color: var(--primary);
+      background: #ffffff;
+      box-shadow: 0 0 0 1px rgba(0, 168, 255, 0.08);
+    }
+
+    .field-input::placeholder {
+      color: #9ca3af;
+    }
+
+    .login-footer {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 8px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 9px 16px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+      min-width: 100px;
+      box-shadow: 0 8px 18px rgba(0, 168, 255, 0.34);
+      transition: background 0.12s ease, transform 0.12s ease,
+        box-shadow 0.12s ease;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 10px 22px rgba(0, 148, 230, 0.45);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+      box-shadow: 0 4px 10px rgba(0, 148, 230, 0.4);
+    }
+
+    @media (max-width: 480px) {
+      .login-wrapper {
+        padding: 16px;
+      }
+
+      .login-card {
+        padding: 22px 18px 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-wrapper">
+    <section class="login-card">
+      <h1 class="login-title">거북이도서관 도서관리자 로그인</h1>
+
+      <form id="loginForm">
+        <div class="field-group">
+          <div class="field-label">이메일</div>
+          <input
+            type="email"
+            id="email"
+            class="field-input"
+            placeholder="이메일을 입력하세요"
+            required
+          />
+        </div>
+
+        <div class="field-group">
+          <div class="field-label">비밀번호</div>
+          <input
+            type="password"
+            id="password"
+            class="field-input"
+            placeholder="비밀번호를 입력하세요"
+            required
+          />
+        </div>
+
+        <div class="login-footer">
+          <button type="submit" class="btn btn-primary">로그인</button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <!-- Firebase Auth 연동 스크립트 -->
+  <script type="module">
+    // 1) Firebase SDK 모듈 CDN에서 불러오기
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+
+    // 2) Firebase 설정값 (요청한 config 그대로 사용)
+    const firebaseConfig = {
+      apiKey: "AIzaSyA_BkguverEd0Cz8XA24ktcAodk9TH-GeI",
+      authDomain: "turtle-library-book-db.firebaseapp.com",
+      projectId: "turtle-library-book-db",
+      storageBucket: "turtle-library-book-db.firebasestorage.app",
+      messagingSenderId: "611950738800",
+      appId: "1:611950738800:web:7d9474d358c0a33bd6e3b5"
+    };
+
+    // 3) Firebase 초기화 & Auth 인스턴스 생성
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // 4) 폼 submit 시 Firebase Auth로 로그인 시도
+    const form = document.getElementById("loginForm");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        // 로그인 성공 → 관리자 페이지로 이동
+        window.location.href = "book-registration.html";
+      } catch (error) {
+        console.error(error);
+        let message = "이메일 또는 비밀번호가 올바르지 않습니다.";
+
+        if (error.code === "auth/invalid-email") {
+          message = "이메일 형식이 올바르지 않습니다.";
+        } else if (error.code === "auth/user-not-found") {
+          message = "등록되지 않은 이메일입니다.";
+        } else if (error.code === "auth/wrong-password") {
+          message = "비밀번호가 일치하지 않습니다.";
+        }
+
+        alert(message);
+      }
+    });
+  </script>
+</body>
+</html>

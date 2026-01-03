@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>거북이도서관 · 도서 정보관리</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <style>
+    body {
+      margin: 0;
+      background: #f2f2f2;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    /* 상단 헤더 */
+    .topbar {
+      height: 54px;
+      background: #000000;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .brand-main {
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    .brand-sub {
+      font-size: 15px;
+      font-weight: 500;
+      opacity: 0.9;
+    }
+
+    .logout-btn {
+      background: #ffffff;
+      color: #000000;
+      border-radius: 999px;
+      border: 1px solid #d0d4da;
+      padding: 6px 14px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .logout-btn:hover {
+      border-color: #00a8ff;
+      color: #00a8ff;
+    }
+
+    /* 전체 레이아웃 */
+    .layout {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      min-height: calc(100vh - 54px);
+    }
+
+    /* 좌측 메뉴 */
+    .sidebar {
+      background: #ffffff;
+      border-right: 1px solid #d5d7db;
+      padding: 20px 16px;
+    }
+
+    .nav-item {
+      display: block;
+      padding: 10px 10px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 650;
+      color: #000000;
+      text-decoration: none;
+      margin-bottom: 2px;
+    }
+
+    .nav-item:hover {
+      background: #f3f5f8;
+    }
+
+    .nav-item.active {
+      color: #00a8ff;
+      font-weight: 700;
+    }
+
+    /* 메인 */
+    .main {
+      background: #ffffff;
+      padding: 26px 28px 36px;
+    }
+
+    .title {
+      font-size: 22px;
+      font-weight: 800;
+      margin-bottom: 18px;
+      color: #000000;
+    }
+
+    .section {
+      margin-bottom: 18px;
+    }
+
+    label {
+      font-size: 13px;
+      color: #333333;
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    input, select {
+      font-family: inherit;
+      font-size: 14px;
+      border-radius: 10px;
+      border: 1px solid #bfc3c9;
+      background: #ffffff;
+      box-sizing: border-box;
+      outline: none;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: #00a8ff;
+      box-shadow: 0 0 0 1px rgba(0,168,255,.28);
+    }
+
+    /* 상단 고정 패널 (선택 도서 + 로그) */
+    .top-panel {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: #ffffff;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid #e2e5ea;
+    }
+
+    .detail-row-1 {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px 14px;
+      margin-bottom: 8px;
+    }
+
+    .detail-row-2 {
+      display: grid;
+      grid-template-columns: 2fr 2fr auto;
+      gap: 10px 14px;
+      align-items: end;
+      margin-bottom: 10px;
+    }
+
+    .field-group {
+      margin-bottom: 0;
+    }
+
+    .field-group span {
+      display: block;
+      font-size: 12px;
+      color: #555;
+      margin-bottom: 4px;
+    }
+
+    .field-group input,
+    .field-group select {
+      width: 100%;
+      padding: 9px 10px;
+    }
+
+    .field-readonly {
+      background: #f5f5f5;
+    }
+
+    .detail-actions-inline {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .btn-primary {
+      border-radius: 999px;
+      border: 1px solid #000;
+      background: #000;
+      color: #fff;
+      font-size: 13px;
+      padding: 8px 16px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-primary:hover {
+      border-color: #00a8ff;
+    }
+
+    .btn-danger {
+      border-radius: 999px;
+      border: 1px solid #c62828;
+      background: #ffffff;
+      color: #c62828;
+      font-size: 13px;
+      padding: 8px 14px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-danger:hover {
+      background: #fff0f0;
+    }
+
+    textarea {
+      width: 100%;
+      height: 90px;
+      border-radius: 12px;
+      border: 1px solid #c8ccd1;
+      background: #f4f4f4;
+      padding: 10px 12px;
+      font-family: ui-monospace, monospace;
+      font-size: 13px;
+      outline: none;
+      resize: none;
+      box-sizing: border-box;
+    }
+
+    /* 도서 검색 영역 */
+    .search-row {
+      display: grid;
+      grid-template-columns: 140px 1fr 140px;
+      gap: 8px;
+    }
+
+    .search-type,
+    .confirm-filter {
+      padding: 10px 10px;
+    }
+
+    .search-input {
+      padding: 10px 12px;
+      width: 100%;
+    }
+
+    .result-table {
+      width: 100%;
+      border-collapse: collapse;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #d0d4da;
+      font-size: 13px;
+    }
+
+    .result-table th,
+    .result-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #e2e5ea;
+    }
+
+    .result-table th {
+      background: #f5f6f8;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .result-row {
+      cursor: pointer;
+    }
+
+    .result-row:hover {
+      background: #f3f5f8;
+    }
+
+    .result-row.selected {
+      background: rgba(0,168,255,0.08);
+    }
+
+    .result-empty {
+      padding: 10px;
+      font-size: 13px;
+      color: #777;
+    }
+
+    /* info_confirmed 배지 */
+    .status-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .status-badge.confirmed {
+      background: rgba(0,168,255,0.14);
+      color: #0077b6;
+    }
+    .status-badge.unconfirmed {
+      background: rgba(255,82,82,0.10);
+      color: #c62828;
+    }
+
+    /* 페이지네이션 */
+    .pagination {
+      margin-top: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 4px;
+      font-size: 13px;
+    }
+    .page-btn {
+      min-width: 26px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid #d0d4da;
+      background: #ffffff;
+      cursor: pointer;
+    }
+    .page-btn.active {
+      background: #00a8ff;
+      border-color: #00a8ff;
+      color: #ffffff;
+      font-weight: 600;
+    }
+    .page-btn.disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- 헤더 -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-main">거북이도서관</span>
+      <span class="brand-sub">관리자페이지</span>
+    </div>
+
+    <button id="logoutBtn" class="logout-btn">로그아웃</button>
+  </header>
+
+  <div class="layout">
+    <!-- 좌측 메뉴 -->
+    <aside class="sidebar">
+      <a class="nav-item" href="book-registration.html">도서 신규등록</a>
+      <a class="nav-item" href="book-location.html">도서 위치관리</a>
+      <a class="nav-item active" href="book-info.html">도서 정보관리</a>
+      <a class="nav-item" href="shelf-location.html">책장 위치정보</a>
+    </aside>
+
+    <!-- 메인 -->
+    <main class="main">
+      <div class="title">도서 정보관리</div>
+
+      <!-- 상단 고정: 선택 도서 정보 + 로그 -->
+      <div class="top-panel">
+        <!-- 선택 도서 정보 -->
+        <section class="section" style="margin-bottom:10px;">
+          <label>선택된 도서 정보</label>
+
+          <!-- 1줄: 바코드 / ISBN / 현재위치 / 정보상태 -->
+          <div class="detail-row-1">
+            <div class="field-group">
+              <span>바코드</span>
+              <input id="detailBarcode" class="field-readonly" readonly />
+            </div>
+            <div class="field-group">
+              <span>ISBN</span>
+              <input id="detailIsbn" class="field-readonly" readonly />
+            </div>
+            <div class="field-group">
+              <span>현재 위치 (책장바코드 5자리)</span>
+              <input id="detailLocation" placeholder="예: 04807" />
+            </div>
+            <div class="field-group">
+              <span>정보 상태</span>
+              <select id="detailConfirm">
+                <option value="N">정보 미확정</option>
+                <option value="Y">정보 확정</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 2줄: 제목 / 저자 / 버튼 -->
+          <div class="detail-row-2">
+            <div class="field-group">
+              <span>제목</span>
+              <input id="detailTitle" />
+            </div>
+            <div class="field-group">
+              <span>저자</span>
+              <input id="detailAuthor" />
+            </div>
+            <div class="detail-actions-inline">
+              <button id="saveBtn" class="btn-primary">정보저장</button>
+              <button id="deleteBtn" class="btn-danger">도서삭제</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 로그 -->
+        <section class="section" style="margin-bottom:0;">
+          <label for="log">로그</label>
+          <textarea id="log" readonly></textarea>
+        </section>
+      </div>
+
+      <!-- 도서 검색 -->
+      <section class="section">
+        <label>도서 검색</label>
+        <div class="search-row">
+          <select id="searchType" class="search-type">
+            <option value="title">제목</option>
+            <option value="author">저자</option>
+            <option value="barcode">바코드</option>
+          </select>
+          <input
+            id="searchKeyword"
+            class="search-input"
+            placeholder="검색어를 입력하세요 (빈칸이면 전체 조회)"
+            autocomplete="off"
+          />
+          <select id="confirmFilter" class="confirm-filter">
+            <option value="all">전체</option>
+            <option value="confirmed">정보 확정만</option>
+            <option value="unconfirmed">정보 미확정만</option>
+          </select>
+        </div>
+      </section>
+
+      <!-- 검색 결과 (맨 아래) -->
+      <section class="section">
+        <label>검색 결과</label>
+        <div id="resultArea">
+          <div class="result-empty">검색 결과가 없습니다.</div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+
+  <!-- 도서 정보관리 로직 -->
+  <script src="book-info.js"></script>
+
+  <!-- 인증상태 확인 + 로그아웃 -->
+  <script>
+    const auth = firebase.auth();
+
+    auth.onAuthStateChanged(user => {
+      if (!user) {
+        window.location.href = "login.html";
+      }
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      try {
+        await auth.signOut();
+        window.location.href = "login.html";
+      } catch (e) {
+        console.error(e);
+        alert("로그아웃 중 오류가 발생했습니다.");
+      }
+    });
+  </script>
+</body>
+</html>

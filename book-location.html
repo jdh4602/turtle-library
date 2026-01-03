@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>거북이도서관 · 도서 위치관리</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <style>
+    body {
+      margin: 0;
+      background: #f2f2f2;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    /* 상단 헤더 */
+    .topbar {
+      height: 54px;
+      background: #000000;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .brand-main {
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    .brand-sub {
+      font-size: 15px;
+      font-weight: 500;
+      opacity: 0.9;
+    }
+
+    .logout-btn {
+      background: #ffffff;
+      color: #000000;
+      border-radius: 999px;
+      border: 1px solid #d0d4da;
+      padding: 6px 14px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .logout-btn:hover {
+      border-color: #00a8ff;
+      color: #00a8ff;
+    }
+
+    /* 전체 레이아웃 */
+    .layout {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      min-height: calc(100vh - 54px);
+    }
+
+    /* 좌측 메뉴 */
+    .sidebar {
+      background: #ffffff;
+      border-right: 1px solid #d5d7db;
+      padding: 20px 16px;
+    }
+
+    .nav-item {
+      display: block;
+      padding: 10px 10px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 650;
+      color: #000000;
+      text-decoration: none;
+      margin-bottom: 2px;
+    }
+
+    .nav-item:hover {
+      background: #f3f5f8;
+    }
+
+    .nav-item.active {
+      color: #00a8ff;
+      font-weight: 700;
+    }
+
+    /* 메인 */
+    .main {
+      background: #ffffff;
+      padding: 26px 28px 36px;
+    }
+
+    .title {
+      font-size: 22px;
+      font-weight: 800;
+      margin-bottom: 26px; /* ISBN과 동일 기준 */
+      color: #000000;
+    }
+
+    .section {
+      margin-bottom: 18px;
+    }
+
+    label {
+      font-size: 13px;
+      color: #333333;
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    input, select {
+      font-family: inherit;
+      font-size: 14px;
+      border-radius: 10px;
+      border: 1px solid #bfc3c9;
+      background: #ffffff;
+      box-sizing: border-box;
+      outline: none;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: #00a8ff;
+      box-shadow: 0 0 0 1px rgba(0,168,255,.28);
+    }
+
+    .search-row {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 8px;
+    }
+
+    .search-type {
+      padding: 10px 10px;
+    }
+
+    .search-input {
+      padding: 10px 12px;
+      width: 100%;
+    }
+
+    .result-table {
+      width: 100%;
+      border-collapse: collapse;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #d0d4da;
+      font-size: 13px;
+    }
+
+    .result-table th,
+    .result-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #e2e5ea;
+    }
+
+    .result-table th {
+      background: #f5f6f8;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .result-row {
+      cursor: pointer;
+    }
+
+    .result-row:hover {
+      background: #f3f5f8;
+    }
+
+    .result-row.selected {
+      background: rgba(0,168,255,0.08);
+    }
+
+    .result-empty {
+      padding: 10px;
+      font-size: 13px;
+      color: #777;
+    }
+
+    .shelf-input {
+      padding: 10px 12px;
+
+      /* 🔹 등록로그와 동일하게 전체폭 */
+      width: 100%;
+      max-width: 100%;
+    }
+
+    textarea {
+      width: 100%;
+      height: 160px;
+      border-radius: 12px;
+      border: 1px solid #c8ccd1;
+      background: #f4f4f4;
+      padding: 10px 12px;
+      font-family: ui-monospace, monospace;
+      font-size: 13px;
+      outline: none;
+      resize: none;
+    }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-main">거북이도서관</span>
+      <span class="brand-sub">관리자페이지</span>
+    </div>
+
+    <button id="logoutBtn" class="logout-btn">로그아웃</button>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <a class="nav-item" href="book-registration.html">도서 신규등록</a>
+      <a class="nav-item active" href="book-location.html">도서 위치관리</a>
+      <a class="nav-item" href="book-info.html">도서 정보관리</a>
+      <a class="nav-item" href="shelf-location.html">책장 위치정보</a>
+    </aside>
+
+    <main class="main">
+      <div class="title">도서 위치관리</div>
+
+      <section class="section">
+        <label>도서 검색</label>
+        <div class="search-row">
+          <select id="searchType" class="search-type">
+            <option value="title">제목</option>
+            <option value="barcode">바코드</option>
+          </select>
+          <input
+            id="searchKeyword"
+            class="search-input"
+            placeholder="검색어를 입력하세요"
+            autocomplete="off"
+          />
+        </div>
+      </section>
+
+      <section class="section">
+        <label>검색 결과</label>
+        <div id="resultArea">
+          <div class="result-empty">검색 결과가 없습니다.</div>
+        </div>
+      </section>
+
+      <section class="section">
+        <label for="shelfInput">책장 바코드</label>
+        <input
+          id="shelfInput"
+          class="shelf-input"
+          autocomplete="off"
+          placeholder="5자리 코드 (예: 00101)"
+        />
+      </section>
+
+      <section class="section">
+        <label for="log">등록로그</label>
+        <textarea id="log" readonly></textarea>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+
+  <script src="book-location.js"></script>
+
+  <script>
+    const auth = firebase.auth();
+
+    auth.onAuthStateChanged(user => {
+      if (!user) {
+        window.location.href = "login.html";
+      }
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      try {
+        await auth.signOut();
+        window.location.href = "login.html";
+      } catch (e) {
+        console.error(e);
+        alert("로그아웃 중 오류가 발생했습니다.");
+      }
+    });
+  </script>
+</body>
+</html>

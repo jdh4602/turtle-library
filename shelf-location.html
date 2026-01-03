@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>거북이도서관 · 책장 위치정보</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <style>
+    body {
+      margin: 0;
+      background: #f2f2f2;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    /* 상단 헤더 */
+    .topbar {
+      height: 54px;
+      background: #000000;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .brand-main {
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    .brand-sub {
+      font-size: 15px;
+      font-weight: 500;
+      opacity: 0.9;
+    }
+
+    .logout-btn {
+      background: #ffffff;
+      color: #000000;
+      border-radius: 999px;
+      border: 1px solid #d0d4da;
+      padding: 6px 14px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .logout-btn:hover {
+      border-color: #00a8ff;
+      color: #00a8ff;
+    }
+
+    /* 전체 레이아웃 */
+    .layout {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      min-height: calc(100vh - 54px);
+    }
+
+    /* 좌측 메뉴 */
+    .sidebar {
+      background: #ffffff;
+      border-right: 1px solid #d5d7db;
+      padding: 20px 16px;
+    }
+
+    .nav-item {
+      display: block;
+      padding: 10px 10px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 650;
+      color: #000000;
+      text-decoration: none;
+      margin-bottom: 2px;
+    }
+
+    .nav-item:hover {
+      background: #f3f5f8;
+    }
+
+    .nav-item.active {
+      color: #00a8ff;
+      font-weight: 700;
+    }
+
+    /* 메인 */
+    .main {
+      background: #ffffff;
+      padding: 26px 28px 36px;
+    }
+
+    .title {
+      font-size: 22px;
+      font-weight: 800;
+      margin-bottom: 18px;
+      color: #000000;
+    }
+
+    .section {
+      margin-bottom: 18px;
+    }
+
+    label {
+      font-size: 13px;
+      color: #333333;
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    select {
+      font-family: inherit;
+      font-size: 13px;
+      border-radius: 10px;
+      border: 1px solid #bfc3c9;
+      background: #ffffff;
+      padding: 8px 10px;
+      outline: none;
+    }
+
+    select:focus {
+      border-color: #00a8ff;
+      box-shadow: 0 0 0 1px rgba(0,168,255,.28);
+    }
+
+    .filter-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+    }
+
+    .filter-row span {
+      color: #555;
+      font-size: 13px;
+    }
+
+    .loading {
+      font-size: 12px;
+      color: #666;
+      margin-top: 6px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #d0d4da;
+      margin-top: 10px;
+    }
+
+    thead {
+      background: #f5f6f8;
+    }
+
+    th,
+    td {
+      padding: 6px 8px; /* 행 높이 줄이기 */
+      border-bottom: 1px solid #e2e5ea;
+      text-align: left;
+      vertical-align: middle; /* 버튼 세로 가운데 정렬 */
+    }
+
+    th {
+      font-weight: 600;
+      color: #444;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .door-no {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .status {
+      font-size: 12px;
+    }
+
+    .status-none {
+      color: #999;
+    }
+
+    .file-link {
+      font-size: 12px;
+      color: #00a8ff;
+      text-decoration: none;
+      word-break: break-all;
+    }
+
+    .file-link:hover {
+      text-decoration: underline;
+    }
+
+    /* 버튼 공통 */
+    .btn {
+      border-radius: 999px;
+      font-size: 12px;
+      padding: 5px 12px;
+      cursor: pointer;
+      white-space: nowrap;
+      border-width: 1px;
+      border-style: solid;
+      background-clip: padding-box;
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+
+    /* 파일등록: 하늘색 (메뉴 선택 색 느낌) */
+    .btn-upload {
+      border-color: #00a8ff;
+      background: #00a8ff;
+      color: #ffffff;
+    }
+
+    .btn-upload:hover:not(:disabled) {
+      filter: brightness(0.95);
+    }
+
+    /* 이미지삭제: 도서정보관리 삭제버튼 스타일 */
+    .btn-danger {
+      border-color: #c62828;
+      background: #ffffff;
+      color: #c62828;
+    }
+
+    .btn-danger:hover:not(:disabled) {
+      background: #fff0f0;
+    }
+
+    /* 액션 셀: 좌우 배치 */
+    .action-cell {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+  </style>
+</head>
+<body>
+  <!-- 헤더 -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-main">거북이도서관</span>
+      <span class="brand-sub">관리자페이지</span>
+    </div>
+
+    <button id="logoutBtn" class="logout-btn">로그아웃</button>
+  </header>
+
+  <div class="layout">
+    <!-- 좌측 메뉴 -->
+    <aside class="sidebar">
+      <a class="nav-item" href="book-registration.html">도서 신규등록</a>
+      <a class="nav-item" href="book-location.html">도서 위치관리</a>
+      <a class="nav-item" href="book-info.html">도서 정보관리</a>
+      <a class="nav-item active" href="shelf-location.html">책장 위치정보</a>
+    </aside>
+
+    <!-- 메인 -->
+    <main class="main">
+      <div class="title">책장 위치정보</div>
+
+      <!-- 필터 + 로딩 상태 -->
+      <section class="section">
+        <div class="filter-row">
+          <span>필터</span>
+          <select id="filterSelect">
+            <option value="none" selected>이미지 없음</option>
+            <option value="has">이미지 있음</option>
+            <option value="all">전체</option>
+          </select>
+        </div>
+
+        <div id="loadState" class="loading">문 번호 목록을 불러오는 중...</div>
+
+        <!-- 문번호 / 이미지 / 파일 등록 -->
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 80px;">문 번호</th>
+              <th>위치 이미지</th>
+              <th style="width: 170px;">파일 등록 / 삭제</th>
+            </tr>
+          </thead>
+          <tbody id="doorTableBody">
+            <!-- JS에서 동적 생성 -->
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+  <!-- Firebase compat SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+
+  <!-- 책장 위치정보 로직 -->
+  <script src="shelf-location.js"></script>
+
+  <!-- 인증상태 확인 + 로그아웃 -->
+  <script>
+    const auth = firebase.auth();
+
+    auth.onAuthStateChanged(user => {
+      if (!user) {
+        window.location.href = "login.html";
+      }
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      try {
+        await auth.signOut();
+        window.location.href = "login.html";
+      } catch (e) {
+        console.error(e);
+        alert("로그아웃 중 오류가 발생했습니다.");
+      }
+    });
+  </script>
+</body>
+</html>
